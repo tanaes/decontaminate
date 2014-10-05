@@ -1,0 +1,500 @@
+  243  autopep8 -r --in-place skbio/math/stats/evolve/
+  244  git diff
+  245  ls
+  246  git commit -am 'Fixed pep8 with autopep8'
+  247  pep8 skbio/math/stats/evolve/
+  248  pep8 skbio/math/stats/evolve/
+  249  pep8 skbio/math/stats/evolve/
+  250  pep8 skbio/math/stats/evolve/
+  251  pep8 skbio/math/stats/evolve/
+  252  git commit -am 'Fixed pep8'
+  253  git pull origin cospeciation
+  254  git push origin cospeciation
+  255  cd ..
+  256  cd codiversification/
+  257  ls
+  258  cd ..
+  259  cd scikit-bio/
+  260  nosetests --with-doctest skbio/math/stats/evolve/ -v
+  261  python skbio/math/stats/evolve/tests/test_hommola.py
+  262  python skbio/math/stats/evolve/tests/test_hommola.py
+  263  python skbio/math/stats/evolve/tests/test_hommola.py
+  264  python skbio/math/stats/evolve/tests/test_hommola.py
+  265  python skbio/math/stats/evolve/tests/test_hommola.py
+  266  python skbio/math/stats/evolve/tests/test_hommola.py
+  267  python skbio/math/stats/evolve/tests/test_hommola.py -v
+  268  python skbio/math/stats/evolve/tests/test_hommola.py -v
+  269  python skbio/math/stats/evolve/tests/test_hommola.py -v
+  270  python skbio/math/stats/evolve/tests/test_hommola.py -v
+  271  clear
+  272  clear
+  273  python skbio/math/stats/evolve/tests/test_hommola.py -v
+  274  git commit -am 'changed loop in hommola_cospeciation to numpy vectorization'
+  275  git push origin cospeciation
+  276  cd ..
+  277  cd codiversification/
+  278  ls
+  279  time ./test_test_cospeciation.py 
+  280  time ./test_cospeciation_call.sh 
+  281  ls
+  282  git status -s
+  283  git branch
+  284  git pull origin testing
+  285  ls
+  286  ./test_cospeciation_call.sh 
+  287  git pull origin testing
+  288  ./test_cospeciation_call.sh 
+  289  less test_cospeciation_call.sh 
+  290  ls
+  291  git status
+  292  cd Example_input/
+  293  ls
+  294  cd ..
+  295  git -h
+  296  git 
+  297  git pull origin testing
+  298  git pull origin testing
+  299  s
+  300  ls
+  301  ./test_test_cospeciation.py 
+  302  ./test_test_cospeciation.py 
+  303  ./test_test_cospeciation.py 
+  304  python
+  305  checkout -h
+  306  git checkout -h
+  307  git checkout -b 'newoutput'
+  308  git status -s
+  309  git commit -am 'modifying output'
+  310  git push origin newoutput
+  311  git branch -v
+  312  git pull origin newoutput
+  313  git push origin newoutput
+  314  git commit -am 'modified output'
+  315  git push origin newoutput
+  316  it commit -am 'further output modifications'
+  317  git commit -am 'further output modifications'
+  318  git branch
+  319  git checkout testing
+  320  ipython
+  321  pip install ipython
+  322  ls
+  323  ipython
+  324  lls
+  325  ls
+  326  less cospeciation.py
+  327  ipython
+  328  ipython
+  329  ipython
+  330  ipython
+  331  ipython
+  332  ipython
+  333  ls
+  334  vim test_cospeciation_call.sh 
+  335  ./test_cospeciation_call.sh 
+  336  vim test_cospeciation_call.sh 
+  337  ./test_cospeciation_call.sh 
+  338  vim test_cospeciation_call.sh 
+  339  vim test_cospeciation_call.sh 
+  340  ./test_cospeciation_call.sh 
+  341  vim test_cospeciation_call.sh 
+  342  ./test_cospeciation_call.sh 
+  343  ./test_cospeciation_call.sh 
+  344  ./test_cospeciation_call.sh > recursive_profile.txt
+  345  ipython
+  346  ls
+  347  git diff origin testing
+  348  git status -s
+  349  git commit -am 'Modified test_cospeciation_call.sh to profile test recursive hommola'
+  350  git branch
+  351  git pull origin testing
+  352  git push origin testing
+  353  cd ..
+  354  cd scikit-bio/
+  355  git branch -v
+  356  git branch -h
+  357  git remotes -v
+  358  git remote -v
+  359  git remote -h
+  360  git status -s
+  361  git status
+  362  git pull origin cospeciation
+  363  cd ..
+  364  cd codiversification/
+  365  ls
+  366  ./test_cospeciation_call.sh > recursive_profile_fast.txt 
+  367  cd ../scikit-bio/
+  368  git pull origin cospeciation
+  369  cd ../codiversification/
+  370  ls
+  371  ./test_cospeciation_call.sh > recursive_profile_faster.txt 
+  372  ./test_cospeciation_call.sh > recursive_profile_faster_fun.txt 
+  373  ./test_cospeciation_call.sh > recursive_profile_faster_funner.txt 
+  374  ls
+  375  cd ..
+  376  cd scikit-bio/
+  377  ls
+  378  git pull origin cospeciation
+  379  git commit -am 'optimization of speed in _get_dist'
+  380  git push origin cospeciation
+  381  pwd
+  382  ls
+  383  ls
+  384  ls
+  385  cd skbio/math/stats/evolve/tests/
+  386  ls
+  387  python test_hommola.py
+  388  centos6/scipy-0.12.0_python-2.7.3
+  389  module load centos6/scipy-0.12.0_python-2.7.3
+  390  python 
+  391  ls
+  392  cd ..
+  393  cd ..
+  394  cd ..
+  395  cd ..
+  396  cd ..
+  397  ls
+  398  git pull origin cospeciation
+  399  less ~/.bash_profile 
+  400  sublime
+  401  source ~/.bash_profile
+  402  als
+  403  ls
+  404  cd skbio/math/stats/evolve/
+  405  ls
+  406  pep8 hommola.py
+  407  pep8 hommola.py
+  408  pep8 hommola.py
+  409  pep8 hommola.py
+  410  pep8 hommola.py
+  411  pep8 hommola.py
+  412  pip install flake8
+  413  ls
+  414  cd ..
+  415  cd ..
+  416  cd ..
+  417  ls
+  418  cd math/stats/evolve/tests/
+  419  ls
+  420  ls
+  421  pep8 test_hommola.py
+  422  pep8 test_hommola.py
+  423  cd ..
+  424  cd ../../../..
+  425  git commit -am 'Fixed pep8 errors'
+  426  git pull origin cospeciation
+  427  git push origin cospeciation
+  428  workon qiime
+  429  cd Development/git_sw/qiime/
+  430  git pull nbresnick master
+  431  which muscle
+  432  which fasttree
+  433  mv ~/Downloads/muscle3.8.31_i86darwin64 ~/.virtualenvs/qiime/bin/.
+  434  mv ~/.virtualenvs/qiime/bin/muscle3.8.31_i86darwin64 muscle
+  435  cd ~/.virtualenvs/qiime/bin
+  436  ls
+  437  cd ..
+  438  ls
+  439  cd ~/Development/git_sw/qiime/
+  440  ls
+  441  ls -l
+  442  mv muscle ~/.virtualenvs/qiime/bin/.
+  443  cd ..
+  444  cd cos
+  445  cd codiversification/
+  446  ls
+  447  git pull origin testing
+  448  git status -s
+  449  git commit -am 'Fixed imports in subcluster'
+  450  git push origin testing
+  451  git pull origin testing
+  452  git pull origin testing
+  453  git commit -am 'Fixed errors in cospeciation.py. Now works with qiime 1.8-dev.'
+  454  git push origin testing
+  455  git commit -am 'Removed debug print statements in reconcile_hosts_symbionts'
+  456  git push origin testing
+  457  git pull origin testing
+  458  cd ~/.virtualenvs/qiime/lib/python2.7/site-packages/cogent/
+  459  ls
+  460  cd evolve/
+  461  ls
+  462  vim ~/.bash_profile
+  463  source ~/.bash_profile
+  464  sublime
+  465  sublime models.pys
+  466  less .bash_profile
+  467  less ~/.bash_profile 
+  468  less /usr/local/bin/virtualenvwrapper.sh
+  469  scp /usr/local/bin/virtualenvwrapper.sh jsanders@odyssey.fas.harvard.edu:~/.
+  470  less ~/.bash_profile
+  471  login_odyssey 
+  472  login_odyssey 
+  473  login_odyssey 
+  474  cd /Library/LaunchAgents/
+  475  ls
+  476  cd ../LaunchDaemons/
+  477  ls
+  478  login_odyssey 
+  479  login_odyssey 
+  480  login_odyssey 
+  481  login_odyssey 
+  482  login_odyssey 
+  483  login_odyssey 
+  484  login_odyssey 
+  485  login_odyssey 
+  486  ls
+  487  login_odyssey 
+  488  login_odyssey 
+  489  login_odyssey 
+  490  login_odyssey 
+  491  login_odyssey 
+  492  login_odyssey 
+  493  login_odyssey 
+  494  login_odyssey 
+  495  login_odyssey 
+  496  echo $EDITOR
+  497  tail 
+  498  ls
+  499  cd qiime_test_data/
+  500  ls
+  501  cd decontaminate/
+  502  ls
+  503  cd test_otu_table.txt 
+  504  cp test_otu_table.txt test_otu_table.2.txt
+  505  ls
+  506  vim test_otu_table.2.txt 
+  507  rm test_otu_table.2.txt 
+  508  vim test_otu_table.2.txt
+  509  vim test_otu_table.3.txt
+  510  ls
+  511  less test_otu_table.3.txt 
+  512  less test_otu_table.2.txt 
+  513  workon qiime
+  514  biom convert -h
+  515  biom convert -i test_otu_table.2.txt -o test_otu_table.2.biom --to-json --table-type 'OTU table'
+  516  biom convert -i test_otu_table.3.txt -o test_otu_table.3.biom --to-json --table-type 'OTU table'
+  517  ls
+  518  vim test_otu_table.0.txt
+  519  biom convert -i test_otu_table.0.txt -o test_otu_table.0.biom --to-json --table-type 'OTU table'
+  520  ls
+  521  cd ..
+  522  cd ..
+  523  cd tests/
+  524  ls
+  525  python test_decontaminate.py 
+  526  python test_decontaminate.py 
+  527  python test_decontaminate.py 
+  528  python test_decontaminate.py 
+  529  python test_decontaminate.py 
+  530  python test_decontaminate.py 
+  531  python test_decontaminate.py 
+  532  python test_decontaminate.py 
+  533  python test_decontaminate.py 
+  534  python test_decontaminate.py 
+  535  python test_decontaminate.py 
+  536  python test_decontaminate.py 
+  537  python test_decontaminate.py 
+  538  cd ..
+  539  ls
+  540  python scripts/decontaminate.py -h
+  541  python scripts/decontaminate.py -h
+  542  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -m qiime_test_data/decontaminate/test_sample_map.txt -o ./
+  543  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -m qiime_test_data/decontaminate/test_sample_map.txt -o ./
+  544  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -m qiime_test_data/decontaminate/test_sample_map.txt -s 'Blank:1'
+  545  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -m qiime_test_data/decontaminate/test_sample_map.txt -s 'Blank:1'
+  546  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -m qiime_test_data/decontaminate/test_sample_map.txt -s 'Blank:1' -o ./
+  547  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -m qiime_test_data/decontaminate/test_sample_map.txt -s 'Blank:1' -o ./
+  548  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -m qiime_test_data/decontaminate/test_sample_map.txt -s 'Blank:1' -o ./
+  549* 
+  550  cd qiime_test_data/decontaminate/
+  551  ls
+  552  filter_fasta.py -h
+  553  filter_fasta.py -f seqs.fna -m test_otu_map.txt -o test_seqs.fna
+  554  pick_otus.py -i test_seqs.fna -o unique_seqs_otu_map.txt
+  555  ls
+  556  cd unique_seqs_otu_map.txt/
+  557  ls
+  558  less test_seqs_otus.txt 
+  559  cp test_seqs_otus.txt ../unique_seqs_otu_map.txt
+  560  cp test_seqs_otus.txt ../unique_seqs_otu_map.txt1
+  561  cd ..
+  562  rm -r unique_seqs_otu_map.txt
+  563  mv unique_seqs_otu_map.txt1 unique_seqs_otu_map.txt
+  564  make_otu_table.py -h
+  565  make_otu_table.py -i unique_seqs_otu_map.txt -o unique_seqs_otu_table.biom
+  566  biom summarize
+  567  biom
+  568  biom summarize-table unique_seqs_otu_table.biom 
+  569  biom summarize-table -i unique_seqs_otu_table.biom 
+  570  python scripts/decontaminate.py -h
+  571  cd ..
+  572  cd ..
+  573  python scripts/decontaminate.py -h
+  574  python scripts/decontaminate.py -h
+  575* python scripts/decontaminate.py -
+  576  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c 99
+  577  which usearch
+  578  echo $PATH
+  579  cd ~/.virtualenvs/qiime/bin/
+  580  ls
+  581  cp ~/Downloads/usearch5.2.236_i86osx32 ./usearch
+  582  usearch
+  583  chmod 755 usearch 
+  584  usearch
+  585  which usearch
+  586  usearch -version
+  587  cd ~/Development/git_sw/qiime/
+  588  ls
+  589  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c 99
+  590  print_qiime_config.py -t
+  591  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c 99
+  592  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c 99
+  593  ls
+  594  less len_sorted.fasta 
+  595  less err_corrected_clusters.uc 
+  596  less clustered_error_corrected.fasta 
+  597  usearch
+  598  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .99
+  599  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .99
+  600  ls -l
+  601  rm abundance_sorted.fasta 
+  602  rm clustered_error_corrected.fasta 
+  603  rm dereplicated_seqs.fasta 
+  604  rm err_corrected_clusters.uc 
+  605  rm len_sorted.fasta 
+  606  ls -l
+  607  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .99
+  608  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .99
+  609  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .99
+  610  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .99
+  611  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .97
+  612  python scripts/decontaminate.py -i qiime_test_data/decontaminate/test_otu_table.biom -o ./ -m qiime_test_data/decontaminate/test_sample_map.txt -f qiime_test_data/decontaminate/test_seqs.fna -M qiime_test_data/decontaminate/unique_seqs_otu_map.txt -s 'Blank:1' --contaminant_db_fp qiime_test_data/decontaminate/test_contam_db.fna -c .90
+  613  ls
+  614  ls -l
+  615  less test_seqs_clusters.uc 
+  616  python tests/test_decontaminate.py 
+  617  python tests/test_decontaminate.py 
+  618  python tests/test_decontaminate.py 
+  619  python tests/test_decontaminate.py 
+  620  python tests/test_decontaminate.py 
+  621  python tests/test_decontaminate.py 
+  622  python tests/test_decontaminate.py 
+  623  python tests/test_decontaminate.py 
+  624  python tests/test_decontaminate.py 
+  625  python tests/test_decontaminate.py 
+  626  python tests/test_decontaminate.py 
+  627  python tests/test_decontaminate.py 
+  628  python tests/test_decontaminate.py 
+  629  python tests/test_decontaminate.py 
+  630  python tests/test_decontaminate.py 
+  631  python tests/test_decontaminate.py 
+  632  python tests/test_decontaminate.py 
+  633  python tests/test_decontaminate.py 
+  634  python tests/test_decontaminate.py 
+  635  python tests/test_decontaminate.py 
+  636  python tests/test_decontaminate.py 
+  637  ls
+  638  cd qiime_test_data/decontaminate/
+  639  ls
+  640  biom summarize-table unique_seqs_otu_table.biom 
+  641  biom summarize-table -i unique_seqs_otu_table.biom 
+  642  ls
+  643  rm unique_seqs_otu_map.txt 
+  644  rm unique_seqs_otu_table.biom 
+  645  rm seqs.fna 
+  646  rm test_contam_db.fna 
+  647  pick_otus.py -i test_seqs.fna -gh
+  648  pick_otus.py -i test_seqs.fna -s 1
+  649  ls
+  650  cd uclust_picked_otus/
+  651  ls
+  652  less test_seqs_otus.txt 
+  653  ls
+  654  make_otu_table.py -i test_seqs_otus.txt 
+  655  make_otu_table.py -i test_seqs_otus.txt -o test_seqs_otu_table.txt
+  656  ls
+  657  less test_seqs_otu_table.txt 
+  658  rm test_seqs_otu_table.txt 
+  659  make_otu_table.py -h
+  660  make_otu_table.py -i test_seqs_otus.txt -o test_seqs_otu_table.biom
+  661  less test_seqs_otu_table.biom 
+  662  biom convert -h
+  663  biom convert -i test_seqs_otu_table.biom -o ../test_seqs_otu_table.biom --to-json --table-type 'OTU_table'
+  664  biom convert -i test_seqs_otu_table.biom -o ../test_seqs_otu_table.biom --to-json --table-type 'OTU table'
+  665  biom convert -i test_seqs_otu_table.biom -o ../test_seqs_otu_table.txt --to-tsv --table-type 'OTU table'
+  666  filter_fasta.py -h
+  667  ../
+  668  cd ../
+  669  filter_fasta.py -f test_seqs.fna -o test_seqs.blanks.fna
+  670  filter_fasta.py -f test_seqs.fna -o test_seqs.blanks.fna --mapping_fp test_seqs_sample_map.txt --valid_states 'Blank:1'
+  671  less test_seqs.blanks.fna 
+  672  pick_otus.py -i test_seqs.blanks.fna -s .97 -o blank_clustered
+  673  cd blank_clustered/
+  674  ls
+  675  less test_seqs.blanks_otus.txt 
+  676  make_otu_table.py -i test_seqs.blanks_otus.txt 
+  677  make_otu_table.py -i test_seqs.blanks_otus.txt -o test_seqs.blanks_otu_table.biom
+  678  filter_otus_from_otu_table.py -h
+  679  filter_otus_from_otu_table.py -i test_seqs.blanks_otu_table.biom -o test_seqs.blanks_otu_table.minfrac13.biom --min_count_fraction 0.13
+  680  biom summarize-table -i test_seqs.blanks_otu_table.minfrac13.biom 
+  681  biom summarize-table -i test_seqs.blanks_otu_table.biom 
+  682  pick_rep_set.py -h
+  683  pick_rep_set.py -i test_seqs.blanks_otus.txt -m most_abundant
+  684  pick_rep_set.py -i test_seqs.blanks_otus.txt -m most_abundant -f ../test_seqs.blanks.fna 
+  685  ls
+  686  ls -l
+  687  cd ..
+  688  ls
+  689  mv test_seqs.blanks.fna_rep_set.fasta blank_clustered/.
+  690  cd uclust_picked_otus/
+  691  ls
+  692  pick_rep_set.py -i test_seqs_otus.txt -m most_abundant -f ../test_seqs.fna
+  693  mv ../test_seqs.fna_rep_set.fasta .
+  694  grep -c '>' test_seqs.fna_rep_set.fasta 
+  695  cd ..
+  696  cd blank_clustered/
+  697  ls
+  698  ls -l
+  699  filter_fasta.py -h
+  700  filter_fasta.py -f test_seqs.blanks.fna_rep_set.fasta -b test_seqs.blanks_otu_table.minfrac13.biom -o test_seqs.blanks.fna_rep_set.minfrac13.fasta
+  701  cd ..
+  702  s
+  703  ls
+  704  mkdir_testout
+  705  mkdir testout
+  706  python ../../scripts/decontaminate.py -h
+  707  python ../../scripts/decontaminate.py -h
+  708  cd ..
+  709  cd decontaminate/
+  710  ls
+  711  ls blank_clustered/
+  712  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta =M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  713  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  714  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  715  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  716  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  717  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  718  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  719  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  720  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  721  ls
+  722  cd test
+  723  cd testout/
+  724  ls
+  725  ls -l
+  726  less abund_contaminants_otu_map.txt 
+  727  less passed_otu_map.txt 
+  728  less ref_contaminants_otu_map.txt 
+  729  less reinstated_contaminants_otu_map.txt 
+  730  less test_seqs.fna_rep_set_clusters.uc 
+  731  less passed_otu_map.txt 
+  732  less abund_contaminants_otu_map.txt 
+  733  less ref_contaminants_otu_map.txt 
+  734  ls
+  735  cd ..
+  736  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  737  python ../../scripts/decontaminate.py -i test_seqs_otu_table.biom -o testout -m test_seqs_sample_map.txt -f uclust_picked_otus/test_seqs.fna_rep_set.fasta -M uclust_picked_otus/test_seqs_otus.txt -s 'Blank:1' --contaminant_db_fp blank_clustered/test_seqs.blanks.fna_rep_set.minfrac13.fasta --contaminant_similarity .99 --removal_stat_blank maxB --removal_stat_sample maxS --removal_differential 1 --reinstatement_stat_blank maxB --reinstatement_stat_sample maxS --reinstatement_differential 1 --reinstatement_sample_number 2 --reinstatement_method intersection 
+  738  echo $HISTSIZE 500
+  739  less ~/.bash_history 
+  740  less ~/.bash_history 
+  741  history
+  742  history > cmd_hist.txt

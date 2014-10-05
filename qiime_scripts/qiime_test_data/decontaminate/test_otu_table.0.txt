@@ -1,0 +1,3 @@
+#SampleID	Blank1	Sample1	Sample2
+otu1	1	4	2
+otu2	4	6	1
