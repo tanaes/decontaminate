@@ -1,4 +1,4 @@
-# uclust --input /var/folders/x7/d7tds9qn0_74nljddc_n03q40000gn/T/uclust_fasta_sortYPRsjW.fasta --id 0.97 --tmpdir /var/folders/x7/d7tds9qn0_74nljddc_n03q40000gn/T --w 8 --stepwords 8 --maxaccepts 1 --libonly --maxrejects 8 --lib test_output/blank_clustered/blanks_rep_set.filtered.fna --uc test_output/filter_output/unique_seqs_rep_set_clusters.uc
+# uclust --maxrejects 8 --input /var/folders/x7/d7tds9qn0_74nljddc_n03q40000gn/T/uclust_fasta_sortQANg0A0GhlTxVB7Z3QdG.fasta --id 0.97 --tmpdir /var/folders/x7/d7tds9qn0_74nljddc_n03q40000gn/T --w 8 --stepwords 8 --maxaccepts 1 --libonly --lib test_output/blank_clustered/blanks_rep_set.filtered.fna --uc test_output/filter_output/unique_seqs_rep_set_clusters.uc
 # version=1.2.22
 # Tab-separated fields:
 # 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel

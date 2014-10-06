@@ -1,4 +1,6 @@
 
+export PYTHONPATH=$PYTHONPATH:~/Development/git_sw/qiime/qiime
+
 input_fasta=./test_data/test_seqs.fna
 out_dir=test_output
 mapping_fp=./test_data/test_seqs_sample_map.txt
@@ -46,7 +48,7 @@ filter_fasta.py -f ${out_dir}/blank_clustered/blanks_rep_set.txt -b ${out_dir}/b
 mkdir ${out_dir}/${filter_out_dir}
 
 # run filtering script
-python ./decontaminate.py \
+python decontaminate.py \
 -i ${out_dir}/unique_seqs/unique_seqs_otu_table.biom \
 -o ${out_dir}/${filter_out_dir} \
 -m ${mapping_fp} \
@@ -61,8 +63,8 @@ python ./decontaminate.py \
 --reinstatement_stat_blank maxB \
 --reinstatement_stat_sample maxS \
 --reinstatement_differential 1 \
---reinstatement_sample_number 2 \
---reinstatement_method intersection 
+#--reinstatement_sample_number 2 \
+#--reinstatement_method intersection 
 
 # filter fasta by all good otu map
 filter_fasta.py -f ${input_fasta} \

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-__author__ = "Dan Knights"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Dan Knights"]
+__author__ = "Jon Sanders"
+__copyright__ = "Copyright 2014, Jon Sanders"
+__credits__ = ["Jon Sanders"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
+__version__ = "1.8.0"
+__maintainer__ = "Jon Sanders"
+__email__ = "jonsan@gmail.com"
 
 from unittest import TestCase, main
 
@@ -14,8 +14,7 @@ import numpy
 from numpy import array
 from numpy.testing import assert_almost_equal, assert_allclose
 
-
-from biom import load_table
+from biom.parse import parse_biom_table
 
 from qiime.decontaminate import get_contamination_stats, compare_blank_abundances
 
@@ -68,14 +67,14 @@ class DecontaminationTests(TestCase):
         """Init variables for the tests """
         test_biom_fp = '/Users/jonsanders/Development/git_sw/qiime/qiime_test_data/decontaminate/test_otu_table.biom'
 
-        test_biom = load_table(test_biom_fp)
+        test_biom = parse_biom_table(open(test_biom_fp,'Ur'))
 
     def test_get_contamination_stats(self):
         """add_contamination_stats_to_biom: 
         """
         test_biom_fp = '/Users/jonsanders/Development/git_sw/qiime/qiime_test_data/decontaminate/test_otu_table.biom'
 
-        test_biom = load_table(test_biom_fp)
+        test_biom = parse_biom_table(open(test_biom_fp,'Ur'))
                 # print('testing contamination')
 
         blank_sample_ids = ['Blank1', 'Blank2']

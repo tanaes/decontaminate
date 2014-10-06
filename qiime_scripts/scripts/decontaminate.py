@@ -1,19 +1,11 @@
-# Before decontamination:
-# remove singletons
-# de novo chimera check
-
-
-
-# Read in parameters
-
 #!/usr/bin/env python
 # File created on 09 Aug 2012
 
 from __future__ import division
 
 __author__ = "Jon Sanders"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jon Sanders", "Nate Bresnick", "Aaron Behr"]
+__copyright__ = "Copyright 2014, Jon Sanders"
+__credits__ = ["Jon Sanders"]
 __license__ = "GPL"
 __version__ = "1.8.0"
 __maintainer__ = "Jon Sanders"
@@ -25,10 +17,14 @@ from qiime.util import load_qiime_config, parse_command_line_parameters,\
 from qiime.parse import parse_qiime_parameters, parse_taxonomy
 from qiime.filter import sample_ids_from_metadata_description
 from qiime.decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file
-from biom import load_table
-from brokit.usearch import usearch_qf
-from brokit.uclust import get_clusters_from_fasta_filepath
+
+from biom.parse import parse_biom_table
+
+from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
+from qiime.pycogent_backports.usearch import usearch_qf
+
 import os
+import numpy as np
 
 
 options_lookup = get_options_lookup()
@@ -36,23 +32,79 @@ script_info = {}
 script_info['brief_description'] = """
 A script to filter sequences by potential contaminants"""
 script_info['script_description'] = """
-Description to be added later.
+This script performs a series of filtering steps on a sequence file with the 
+intent of removing contaminant sequences. It requires input of an OTU table, a
+sample map, an OTU map, a sequence FASTA file, and an output directory.
+
+There are two primary approaches the script can take: (1) comparing sequence
+abundances in blank control sequence libraries to those in sample libraries,
+where sequences present in blanks are presumed to be contaminants, and (2)
+comparing sequences in sample libraries to a database of known contaminants.
+
+In approach (1), OTUs (or unique sequences, if OTU table and map are defined at
+100% identity) are tested for their maximum and mean presence in blank and 
+sample libraries, and excluded if they satisfy the given criteria. For example, 
+if you want to exclude any sequences whose maximum abundance in a blank sample
+is more than 10% the maximum abundance in a sample (maxB > 0.1 * maxS), you
+would choose '--removal_stat_blank maxB --removal_stat_sample maxS 
+--removal_differential 0.1'. For this approach, you must also provide a column 
+in your mapping file that indicates which samples to use as blanks, and pass
+this information to the script with the 'valid states' option (e.g. 
+'Blank:True')
+
+In approach (2), you must provide a fasta library of putative contaminants.
+These may be previously clustered OTUs from the blank samples, commonly
+sequenced contaminants (if known), or another fasta file. Sequences will be
+clustered against this fasta file using Uclust-Ref, and any that match within
+a given percent similarity (using the '-c' or '--contaminant_similarity' option)
+will be marked as putative contaminants. 
+
+When using approach (2), it is possible to remove 'real' sequences from samples
+that just happen to be similar to contaminants. This may be detectable when
+using unique sequence OTU tables/maps as input, if the 'real' sequences are
+nonetheless slightly different from contaminants. In this case, it may be
+desireable to reinstate those unique sequences that are present in samples but
+not in blanks. You may do this using criteria of relative abundance (similar to
+approach [1], where a sequence is reinstated if its max presence in a sample is
+greater than its max presence in a blank, i.e. maxS > X * maxB) or of incidence
+in non-blank samples (i.e. reinstated if present in two or more samples). If
+both criteria are provided, you must choose to reinstate either the intersection
+of the criteria (i.e. BOTH more abundant in samples AND present in 2 or more)
+or the union (i.e. EITHER more abundant in samples OR present in 2 or more).
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append(("""Example:""", """
 The following steps are performed by the command below:
 
-1.
+1. Calculate max relative abundance of each sequence in samples and blanks
 
-2. 
+2. Identify sequences whose maximum abunance in blanks is more than 10% their
+maximum abundance in samples.
+
+3. Output OTU maps of sequences for which above is true, and for which above is
+false.
 """, """
-test_cospeciation_only_nate_draft_2.py -i $PWD/Example_output/cOTUs_test 
--p $PWD/Example_input/otu_table_HostSpecies_rarified_filtered.txt 
--a $PWD/Example_input/host_tree.tre -o $PWD/Example_output/hommola_test 
--T $PWD/hommola -t $PWD/Example_input/taxonomy.txt -m $PWD/Example_input/sample_map.txt 
--c HostSpecies"""))
+decontaminate.py -i unique_seqs_otu_table.biom -o filter_out_dir 
+-m metadata_mapping_file.txt -f unique_seqs_rep_set.fna 
+-M unique_seqs_otus.txt -s 'Blank:True' --removal_stat_blank maxB 
+--removal_stat_sample maxS --removal_differential 0.1
+"""))
 script_info['output_description'] = """
-To be added later
+This script will output a tab-delimited summary table, indicating the relative
+abundance stats for each sequence considered, along with its fate at each step
+of the process. 
+
+It will also output an OTU map for each category of sequences identified (e.g.
+those never identified as contaminants, those identified as reference-based
+contaminants, those identified as abundance-based contaminants, and those
+reinstated). These OTU maps can then be used to filter in the input FASTA file. 
+
+Output file naming:
+contamination_summary.txt -- tab-delimited per-sequence summary file
+assed_otu_map.txt -- OTU map of non-contaminant sequences
+ref_contaminants_otu_map.txt -- OTU map of reference contaminant sequences
+abund_contaminants_otu_map.txt -- OTU map of abundance contaminant sequences
+reinstated_contaminants_otu_map.txt -- OTU map of reinstated sequences
 """
 script_info['required_options'] = [
     options_lookup["otu_table_as_primary_input"],
@@ -179,16 +231,17 @@ def main():
                             "for sequence reinstatement, must also provide "
                             "a method for combining results.")        
 
-    unique_seq_biom = load_table(otu_table_fp)
+    unique_seq_biom = parse_biom_table(open(otu_table_fp,'Ur'))
         
     # get blank sample IDs from mapping file
 
     blank_sample_ids = sample_ids_from_metadata_description(
             open(mapping_fp, 'U'), valid_states)
 
-    sample_sample_ids = set(unique_seq_biom.ids(axis='sample')) - set(blank_sample_ids)
+    sample_sample_ids = set(unique_seq_biom.SampleIds) - set(blank_sample_ids)
 
-    sample_biom = unique_seq_biom.filter(sample_sample_ids, axis='sample', inplace=False)
+    sample_biom = unique_seq_biom.filterSamples(lambda val, id_, metadata: 
+        id_ in blank_sample_ids, invert=True)
 
     # calculate contamination statistics dictionary from uniqseq biom file
 
@@ -232,7 +285,7 @@ def main():
 
         # Pick seqs that fail the similarity to contaminants rule
 
-        ref_contaminants = set(unique_seq_biom.ids(axis='observation')) - set(failures)
+        ref_contaminants = set(unique_seq_biom.ObservationIds) - set(failures)
 
         # Pick seqs from similarity search to reinstate
         if (reinstatement_stat_blank and reinstatement_stat_sample and reinstatement_differential):
@@ -250,10 +303,10 @@ def main():
                 reinstated_seqs = abund_reinstated_seqs
 
         if reinstatement_sample_number:
-            incidence_reinstated_seqs = sample_biom.pa().filter(
-                    lambda val, id_, metadata: reinstatement_sample_number <= 
-                    val.sum(), axis='observation', inplace=False).ids(
-                    axis='observation')
+            incidence_reinstated_seqs_idx = sample_biom.nonzeroCounts(
+                'observation', binary=True) >= reinstatement_sample_number
+            incidence_reinstated_seqs = np.array(sample_biom.ObservationIds)[
+                                                 incidence_reinstated_seqs_idx]
 
             # Only consider seqs as reinstated if previously identified as contaminants
             incidence_reinstated_seqs = (ref_contaminants | set(abund_contaminants)) & set(incidence_reinstated_seqs)
@@ -268,7 +321,7 @@ def main():
                 reinstated_seqs = abund_reinstated_seqs & incidence_reinstated_seqs
 
     # print filtered OTU maps
-    ever_good_seqs = set(sample_biom.ids(axis='observation')) - (set(abund_contaminants) | set(ref_contaminants))
+    ever_good_seqs = set(sample_biom.ObservationIds) - (set(abund_contaminants) | set(ref_contaminants))
     print_filtered_otu_map(otu_map_fp, os.path.join(output_dir,'passed_otu_map.txt'), ever_good_seqs)
 
     if ref_contaminants:
@@ -282,7 +335,7 @@ def main():
 
 
     # print log file / per-seq info
-    print_results_file(unique_seq_biom.ids(axis='observation'),
+    print_results_file(unique_seq_biom.ObservationIds,
                        contamination_stats_header, contamination_stats_dict, 
                        abund_contaminants,
                        ref_contaminants,

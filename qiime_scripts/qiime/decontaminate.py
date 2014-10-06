@@ -1,26 +1,32 @@
+#!/usr/bin/env python
+#file decontaminate.py: helper functions for removing contaminants
 
-test_blank_sample_ids = ['Blank1', 'Blank2']
+__author__ = "Jon Sanders"
+__copyright__ = "Copyright 2014, Jon Sanders"
+__credits__ = ["Jon Sanders"]
+__license__ = "GPL"
+__version__ = "1.8.0"
+__maintainer__ = "Jon Sanders"
+__email__ = "jonsan@gmail.com"
 
 def get_contamination_stats(biom_file, blank_sample_ids, proportional=False):
     if not proportional:
-        biom_file = biom_file.norm()
+        biom_file = biom_file.normObservationBySample()
 
-    blank_data = biom_file.filter(blank_sample_ids, axis='sample', 
-        invert=False, inplace=False).matrix_data
+    blank_data = biom_file.filterSamples(lambda val, id_, metadata: 
+        id_ in blank_sample_ids, invert=False)
 
-    sample_data = biom_file.filter(blank_sample_ids, axis='sample', 
-        invert=True, inplace=False).matrix_data
-
-    maxS = sample_data.max(axis=1).todense().tolist()
-    maxB = blank_data.max(axis=1).todense().tolist()
-    avgS = sample_data.mean(axis=1).tolist()
-    avgB = blank_data.mean(axis=1).tolist()
+    sample_data = biom_file.filterSamples(lambda val, id_, metadata: 
+        id_ in blank_sample_ids, invert=True)
 
     stats_dict = {}
-    i = 0
-    for otu in biom_file.ids(axis='observation'):
-        stats_dict[otu] = [maxS[i][0], avgS[i][0], maxB[i][0], avgB[i][0]]
-        i += 1
+
+    for otu in biom_file.ObservationIds:
+
+        stats_dict[otu] = [sample_data.observationData(otu).max(),
+                           sample_data.observationData(otu).mean(),
+                           blank_data.observationData(otu).max(),
+                           blank_data.observationData(otu).mean()]
 
     return(['maxS','avgS','maxB','avgB'], stats_dict)
 
