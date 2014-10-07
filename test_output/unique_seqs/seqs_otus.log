@@ -7,7 +7,7 @@ max_accepts:20
 max_rejects:500
 new_cluster_identifier:denovo
 optimal:False
-output_dir:test_output/unique_seqs
+output_dir:./test_output/unique_seqs
 prefilter_identical_sequences:True
 presort_by_abundance:True
 save_uc_files:True
@@ -16,4 +16,4 @@ stepwords:20
 suppress_sort:True
 word_length:12
 Num OTUs:53
-Result path: test_output/unique_seqs/test_seqs_otus.txt
+Result path: ./test_output/unique_seqs/seqs_otus.txt
