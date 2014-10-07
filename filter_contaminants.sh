@@ -1,5 +1,5 @@
 
-input_fasta=./test_data/test_seqs.fna
+input_fasta_raw=./test_data/test_seqs_raw.fna
 out_dir=test_output
 mapping_fp=./test_data/test_seqs_sample_map.txt
 blank_category='Blank:1'
@@ -10,6 +10,11 @@ contaminant_similarity=.97
 
 mkdir ${out_dir}
 
+
+#### split libraries ####
+split_libraries.py -m ${mapping_fp} -f ${input_fasta_raw} -o ${test_output}/split_libraries_out -b 8
+
+input_fasta=${test_output}/split_libraries_out/seqs.fna
 
 #### Pick unique seqs #####
 
@@ -77,4 +82,10 @@ filter_fasta.py -f ${input_fasta} \
 # cat filtered fastas together into a contaminant-free fasta
 cat ${out_dir}/${filter_out_dir}/passed_seqs.fna ${out_dir}/${filter_out_dir}/reinstated_seqs.fna > ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.fna
 
+### OPTIONAL STEP: filter original fastq/a by split-libraries-format fasta ####
 
+# get list of original sequence headers
+perl -ne '/^>.+?\s(.+?\n)/ and print $1' ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.fna > ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.headers.txt
+
+# use seqtk to filter original 
+seqtk subseq ${input_fasta_raw} ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.headers.txt > ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.raw.fna
