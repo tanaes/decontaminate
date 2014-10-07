@@ -1,7 +1,5 @@
 
-export PYTHONPATH=$PYTHONPATH:~/Development/git_sw/qiime/qiime
-
-input_fasta=./test_data/test_seqs.fna
+input_fasta_raw=./test_data/test_seqs_raw.fna
 out_dir=test_output
 mapping_fp=./test_data/test_seqs_sample_map.txt
 blank_category='Blank:1'
@@ -12,6 +10,11 @@ contaminant_similarity=.97
 
 mkdir ${out_dir}
 
+
+#### split libraries ####
+split_libraries.py -m ${mapping_fp} -f ${input_fasta_raw} -o ${test_output}/split_libraries_out -b 8
+
+input_fasta=${test_output}/split_libraries_out/seqs.fna
 
 #### Pick unique seqs #####
 
@@ -48,7 +51,7 @@ filter_fasta.py -f ${out_dir}/blank_clustered/blanks_rep_set.txt -b ${out_dir}/b
 mkdir ${out_dir}/${filter_out_dir}
 
 # run filtering script
-python decontaminate.py \
+python ./decontaminate.py \
 -i ${out_dir}/unique_seqs/unique_seqs_otu_table.biom \
 -o ${out_dir}/${filter_out_dir} \
 -m ${mapping_fp} \
@@ -63,8 +66,8 @@ python decontaminate.py \
 --reinstatement_stat_blank maxB \
 --reinstatement_stat_sample maxS \
 --reinstatement_differential 1 \
-#--reinstatement_sample_number 2 \
-#--reinstatement_method intersection 
+--reinstatement_sample_number 2 \
+--reinstatement_method intersection 
 
 # filter fasta by all good otu map
 filter_fasta.py -f ${input_fasta} \
@@ -79,4 +82,10 @@ filter_fasta.py -f ${input_fasta} \
 # cat filtered fastas together into a contaminant-free fasta
 cat ${out_dir}/${filter_out_dir}/passed_seqs.fna ${out_dir}/${filter_out_dir}/reinstated_seqs.fna > ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.fna
 
+### OPTIONAL STEP: filter original fastq/a by split-libraries-format fasta ####
 
+# get list of original sequence headers
+perl -ne '/^>.+?\s(.+?\n)/ and print $1' ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.fna > ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.headers.txt
+
+# use seqtk to filter original 
+seqtk subseq ${input_fasta_raw} ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.headers.txt > ${out_dir}/${filter_out_dir}/all_noncontaminant_seqs.raw.fna
