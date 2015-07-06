@@ -96,7 +96,7 @@ mkdir ${out_dir}/${filter_out_dir}
 # run filtering script
 if [ ${verbose} = "True" ]; then echo "Running filtering script"; fi;
 
-python ./decontaminate.py \
+python ./qiime_scripts/scripts/decontaminate_script.py \
 -i ${out_dir}/unique_seqs/unique_seqs_otu_table.biom \
 -o ${out_dir}/${filter_out_dir} \
 -m ${mapping_fp} \
