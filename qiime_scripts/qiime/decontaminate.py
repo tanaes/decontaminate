@@ -9,6 +9,24 @@ __version__ = "1.8.0"
 __maintainer__ = "Jon Sanders"
 __email__ = "jonsan@gmail.com"
 
+from biom.table import SparseOTUTable
+from biom.parse import parse_classic_table_to_rich_table
+
+def mothur_counts_to_biom(mothur_f):
+    constructor = SparseOTUTable
+    sample_mapping = None
+    obs_mapping = None
+    process_func = None
+
+    
+    mothur_biom = parse_classic_table_to_rich_table(
+        [line.rstrip('\n') for line in mothur_f], 
+        None, None, None, SparseOTUTable)
+    filter_biom = mothur_biom.filterSamples(
+        lambda val, id_, metadata: id_ in 'total', invert=True)
+
+    return(filter_biom)
+
 def get_contamination_stats(biom_file, blank_sample_ids, proportional=False):
     if not proportional:
         biom_file = biom_file.normObservationBySample()

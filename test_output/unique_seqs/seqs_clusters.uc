@@ -1,4 +1,4 @@
-# uclust --maxrejects 500 --input /tmp/UclustExactMatchFilterx4tBkKuKZQPg3eorpqsK.fasta --id 1.0 --tmpdir /var/folders/x7/d7tds9qn0_74nljddc_n03q40000gn/T --w 12 --stepwords 20 --usersort --maxaccepts 20 --stable_sort --uc ./test_output/unique_seqs/seqs_clusters.uc
+# uclust --maxrejects 500 --input /tmp/UclustExactMatchFilterE0gK2lhkXt0GGHiYKt0f.fasta --id 1.0 --tmpdir /var/folders/x7/d7tds9qn0_74nljddc_n03q40000gn/T --w 12 --stepwords 20 --usersort --maxaccepts 20 --stable_sort --uc ./test_output/unique_seqs/seqs_clusters.uc
 # version=1.2.22
 # Tab-separated fields:
 # 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel

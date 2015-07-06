@@ -12,16 +12,19 @@ __maintainer__ = "Jon Sanders"
 __email__ = "jonsan@gmail.com"
 __status__ = "Development"
 
+
 from qiime.util import load_qiime_config, parse_command_line_parameters,\
     get_options_lookup, make_option
 from qiime.parse import parse_qiime_parameters, parse_taxonomy
 from qiime.filter import sample_ids_from_metadata_description
-from qiime.decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file
+from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
+from qiime.pycogent_backports.usearch import usearch_qf
+
+from decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file 
 
 from biom.parse import parse_biom_table
 
-from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
-from qiime.pycogent_backports.usearch import usearch_qf
+
 
 import os
 import numpy as np
@@ -231,8 +234,15 @@ def main():
                             "for sequence reinstatement, must also provide "
                             "a method for combining results.")        
 
-    unique_seq_biom = parse_biom_table(open(otu_table_fp,'Ur'))
-        
+    #Open otu table. If fails 
+    try:
+        unique_seq_biom = parse_biom_table(open(otu_table_fp,'Ur'))
+    except ValueError:
+        unique_seq_biom = mothur_counts_to_biom(open(otu_table_fp,'Ur'))
+    except IOError:
+        print("Cannon open biom file or counts table.")
+        raise
+
     # get blank sample IDs from mapping file
 
     blank_sample_ids = sample_ids_from_metadata_description(
