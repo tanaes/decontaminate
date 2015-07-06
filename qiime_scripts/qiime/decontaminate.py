@@ -1,5 +1,24 @@
+#!/usr/bin/env python
+#file decontaminate.py: helper functions for removing contaminants
 
-test_blank_sample_ids = ['Blank1', 'Blank2']
+__author__ = "Jon Sanders"
+__copyright__ = "Copyright 2014, Jon Sanders"
+__credits__ = ["Jon Sanders"]
+__license__ = "GPL"
+__version__ = "1.9.1"
+__maintainer__ = "Jon Sanders"
+__email__ = "jonsan@gmail.com"
+
+from biom import load_table
+
+def mothur_counts_to_biom(mothur_fp):
+
+    mothur_biom = load_table(mothur_fp)
+    mothur_biom.type = u'OTU table'
+    filter_biom = mothur_biom.filter(
+        lambda val, id_, metadata: id_ in 'total', invert=True)
+
+    return(filter_biom)
 
 def get_contamination_stats(biom_file, blank_sample_ids, proportional=False):
     if not proportional:

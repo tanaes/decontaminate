@@ -17,7 +17,7 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from biom import load_table
 
-from qiime.decontaminate import get_contamination_stats, compare_blank_abundances
+from decontaminate import get_contamination_stats, compare_blank_abundances, mothur_counts_to_biom
 
 def assertDeepAlmostEqual(test_case, expected, actual, *args, **kwargs):
     """
@@ -69,6 +69,20 @@ class DecontaminationTests(TestCase):
         test_biom_fp = '/Users/jonsanders/Development/git_sw/qiime/qiime_test_data/decontaminate/test_otu_table.biom'
 
         test_biom = load_table(test_biom_fp)
+
+
+    def test_mothur_counts_to_biom(self):
+        """Convert a mothur counts table to a biom object"""
+        test_counts_fp = '/Users/jonsanders/Development/git_sw/decontaminate/qiime_scripts/qiime_test_data/decontaminate/test.count_table'
+
+        test_counts_biom_fp = '/Users/jonsanders/Development/git_sw/decontaminate/qiime_scripts/qiime_test_data/decontaminate/test.count_table.biom'
+
+        test_counts_biom = load_table(test_counts_biom_fp)
+
+        obs_counts_biom = mothur_counts_to_biom(test_counts_fp)
+
+        self.assertEqual(test_counts_biom, obs_counts_biom)
+
 
     def test_get_contamination_stats(self):
         """add_contamination_stats_to_biom: 
