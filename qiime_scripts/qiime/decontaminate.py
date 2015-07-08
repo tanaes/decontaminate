@@ -162,16 +162,56 @@ def compare_blank_abundances(stats_dict, stats_header,
 
 def print_filtered_otu_map(input_otu_map_fp, output_otu_map_fp, filter_set):
 
-    results = set()
     output_otu_map_f = open(output_otu_map_fp, 'w')
     for line in open(input_otu_map_fp, 'U'):
         seq_identifier = line.strip().split('\t')[0]
-        # only write this line if the otu has more than n sequences (so
-        # greater than n tab-separated fields including the otu identifier)
+        # write OTU line if present in the filter set
         if seq_identifier in filter_set:
             output_otu_map_f.write(line)
     output_otu_map_f.close()
     return
+
+def print_filtered_mothur_counts(mothur_counts_fp, output_counts_fp, filter_set):
+
+    output_counts_f = open(output_counts_fp, 'w')
+
+    t = 0
+    for line in open(mothur_counts_fp, 'U'):
+        # print header line
+        if t = 0:
+            continue
+
+        seq_identifier = line.strip().split('\t')[0]
+        # only write this line if the otu has more than n sequences (so
+        # greater than n tab-separated fields including the otu identifier)
+        if seq_identifier in filter_set:
+            output_counts_f.write(line)
+    output_counts_f.close()
+    return
+
+
+def print_filtered_seq_headers(seq_headers, output_headers_fp, filter_set):
+
+    output_headers_f = open(output_headers_fp, 'w')
+
+    for x in seq_headers:
+        if x in filter_set:
+            output_headers_f.write('{0}\n'.format(x))
+
+    output_headers_f.close()
+    return
+
+
+def print_filtered_output(output_method, unfiltered_input, output_dir, output_dict, output_categories=output_dict.keys()):
+    output_fn = 'print_filtered_' + output_method
+
+    for category in output_categories:
+        output_fn(unfiltered_input,
+                  os.join(output_dir,
+                          '{0}_{1}.txt'.format(category, output_method),
+                  output_dict[category])
+
+    retur
 
 def print_results_file(seq_list, 
                        stats_header, stats_dict, 
