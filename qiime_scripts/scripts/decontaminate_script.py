@@ -20,7 +20,7 @@ from qiime.filter import sample_ids_from_metadata_description
 from bfillings.uclust import get_clusters_from_fasta_filepath
 from bfillings.usearch import usearch_qf
  
-from decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file, pick_ref_contaminants
+from decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file, pick_ref_contaminants, reinstate_abund_seqs, reinstate_incidence_seqs, print_filtered_output, mothur_counts_to_biom
 
 from biom import load_table
 
@@ -110,11 +110,14 @@ abund_contaminants_otu_map.txt -- OTU map of abundance contaminant sequences
 reinstated_contaminants_otu_map.txt -- OTU map of reinstated sequences
 """
 script_info['required_options'] = [
-    options_lookup["otu_table_as_primary_input"],
-    options_lookup["output_dir"],
-    options_lookup["mapping_fp"]
+    options_lookup["output_dir"]
     ]
 script_info['optional_options'] = [
+    options_lookup["otu_table_as_primary_input"],
+    make_option('--mothur_counts_fp',
+                type='existing_filepath',
+                help='path to mothur counts table as input'),
+    options_lookup["mapping_fp"],
     make_option('-M', '--otu_map_fp', type="existing_filepath",
                  help='the input OTU map file'),
     make_option('-s',
@@ -130,8 +133,10 @@ script_info['optional_options'] = [
                 help=('Sequence similarity threshold for contaminant matches')),
     make_option('-r', '--max_correlation', type='float',
                 help=('Maximum Spearman correlation for contaminant identification')),
-    make_option('--correlate_header', type='string'
+    make_option('--correlate_header', type='string',
                 help=('Column header in mapping file with correlation data')),
+    make_option('--min_relabund_threshold', type="float",
+                help='discard sequences below this relative abundance threshold'),
     make_option('--removal_stat_blank', type="choice", choices=["maxB", "avgB"],
                  help='blank statistic to be used for removal (maxB, avgB)'),
     make_option('--removal_stat_sample', type="choice", choices=["maxS", "avgS"],
@@ -148,7 +153,7 @@ script_info['optional_options'] = [
                  help='minimum number of samples necessary for reinstatement'),
     make_option('--reinstatement_method', type="choice", choices=["union", "intersection"],
                  help='method to rectify reinstatement criteria'),
-    make_option('--write_output_seq_lists', type="store_true",
+    make_option('--write_output_seq_lists', action="store_true",
                  help='write separate sequence name lists for each contaminant category')
 
     ]
@@ -159,6 +164,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     otu_table_fp = opts.otu_table_fp
+    mothur_counts_fp = opts.mothur_counts_fp
     mapping_fp = opts.mapping_fp
     valid_states = opts.valid_states
     blank_id_fp = opts.blank_id_fp
@@ -169,6 +175,7 @@ def main():
     input_fasta_fp = opts.input_fasta_fp
     otu_map_fp = opts.otu_map_fp
     output_dir = opts.output_dir
+    min_relabund_threshold = opts.min_relabund_threshold
     removal_stat_blank = opts.removal_stat_blank
     removal_stat_sample = opts.removal_stat_sample
     removal_differential = opts.removal_differential
@@ -200,8 +207,24 @@ def main():
     #   - hit to contaminant
     #   - reinstatement after hit
 
-    # open uniqseq biom file
+    # Make sure passed at least one of an OTU biom or mothur counts table file
+    input_file_counter = 0
 
+    if mothur_counts_fp:
+        input_file_counter += 1
+        unique_seq_biom = mothur_counts_to_biom(mothur_counts_fp)
+        mothur_output = True
+        print "mothur input"
+
+    if otu_table_fp:
+        input_file_counter += 1
+        unique_seq_biom = load_table(otu_table_fp)
+        mothur_output = False
+        print "BIOM input"
+
+    if input_file_counter != 1:
+        option_parser.error("must provide ONLY ONE of an OTU table biom file or"
+                            "mothur counts table")
 
     # Check to make sure that if blank-based contamination filtering requested,
     # all necessary options are specified:
@@ -268,20 +291,6 @@ def main():
     else:
         reinstatement = False
 
-
-    #Open otu table. If fails, check to see if it's a mothur counts table
-    try:
-        unique_seq_biom = load_table(otu_table_fp)
-        mothur_output = False
-    except ValueError:
-        unique_seq_biom = mothur_counts_to_biom(otu_table_fp)
-        mothur_output = True
-        mothur_counts_fp = otu_table_fp
-    except IOError:
-        print("Cannon open biom file or counts table.")
-        raise
-
-
     # get blank sample IDs from mapping file or sample ID list
 
     if mapping_fp and valid_states:
@@ -291,12 +300,22 @@ def main():
     elif blank_id_fp is not None:
         blank_id_f = open(blank_id_fp, 'Ur')
         blank_sample_ids = set([line.strip().split()[0]
-                                for l in blank_sample_ids
+                                for line in blank_id_f
                                 if not line.startswith('#')])
         blank_id_f.close()
         blanks = True
     else:
         blanks = False
+
+
+    # Initialize output objets  
+
+    output_dict = {}
+    contaminant_types = []
+
+    contamination_stats_dict = None
+    contamination_stats_header = None
+    corr_data_dict = None
 
 
     # Do blank-based stats calculations, if not there check to make sure no 
@@ -311,19 +330,11 @@ def main():
                             "samples indicated in mapping file or ID file.")
 
 
-    # Initialize contaminant id lists as empty sets
-
-    abund_contaminants = set()
-    ref_contaminants = set()
-    corr_contaminants = set()
-    reinstated_seqs = set()
-
-    output_dict = {}
-    contaminant_types = []
-
     seq_ids = unique_seq_biom.ids(axis='observation')
 
+
     # Do blank-based contaminant identification
+
 
     if blank_stats_removal:
         output_dict['abund_contaminants'] = compare_blank_abundances(contamination_stats_dict, 
@@ -332,6 +343,8 @@ def main():
                                 removal_stat_sample,
                                 removal_differential,
                                 negate=False)
+
+
 
         contaminant_types.append('abund_contaminants')
 
@@ -379,7 +392,7 @@ def main():
     if reinstatement_sample_number:
         output_dict['incidence_reinstated_seqs'] = reinstate_incidence_seqs(
                      putative_contaminants,
-                     test_biom,
+                     unique_seq_biom,
                      blank_sample_ids,
                      reinstatement_sample_number)
 
@@ -400,8 +413,11 @@ def main():
 
 
     # ...and those either never ID'd as contaminants or reinstated:
+    if reinstatement:
+        output_dict['all_good_seqs'] = set(output_dict['ever_good_seqs'] | output_dict['reinstated_seqs'])
 
-    output_dict['all_good_seqs'] = set(output_dict['ever_good_seqs'] | output_dict['reinstated_seqs'])
+        # ...and those who remain contaminants after reinstatement:
+        output_dict['never_good_seqs'] = set(putative_contaminants - output_dict['reinstated_seqs'])
 
 
     # print filtered OTU maps if given a QIIME OTU map input
@@ -409,55 +425,29 @@ def main():
     if otu_map_fp:
         print_filtered_output('otu_map', otu_map_fp, output_dir, output_dict)
 
-        print_filtered_otu_map(otu_map_fp, os.path.join(output_dir,'passed_all_otu_map.txt'), ever_good_seqs)
-
-        print_filtered_otu_map(otu_map_fp, os.path.join(output_dir,'passed_reinstated_otu_map.txt'), all_good_seqs)
-
-        # print filtered contaminant OTU maps
-        if ref_contaminants:
-            print_filtered_otu_map(otu_map_fp, os.path.join(output_dir,'ref_contaminants_otu_map.txt'), ref_contaminants)
-
-        if abund_contaminants:
-            print_filtered_otu_map(otu_map_fp, os.path.join(output_dir,'abund_contaminants_otu_map.txt'), abund_contaminants)
-
-        if corr_contaminants:
-            print_filtered_otu_map(otu_map_fp, os.path.join(output_dir,'correlation_contaminants_otu_map.txt'), corr_contaminants)
-
-        if reinstated_seqs:
-            print_filtered_otu_map(otu_map_fp, os.path.join(output_dir,'reinstated_contaminants_otu_map.txt'), reinstated_seqs)
-
 
     # print filtered Mothur counts tables if given a Mothur counts table input
 
     if mothur_output:
-        print_filtered_mothur_counts(mothur_counts_fp, os.path.join(output_dir,'passed_all_mothur_counts.txt'), ever_good_seqs)
+        print_filtered_output('mothur_counts', mothur_counts_fp, output_dir, output_dict)
 
-        print_filtered_mothur_counts(mothur_counts_fp, os.path.join(output_dir,'passed_reinstated_mothur_counts.txt'), all_good_seqs)
 
-        # print filtered contaminant OTU maps
-        if ref_contaminants:
-            print_filtered_mothur_counts(mothur_counts_fp, os.path.join(output_dir,'ref_contaminants_mothur_counts.txt'), ref_contaminants)
+    # print filtered seq header files if requested
 
-        if abund_contaminants:
-            print_filtered_mothur_counts(mothur_counts_fp, os.path.join(output_dir,'abund_contaminants_mothur_counts.txt'), abund_contaminants)
-
-        if corr_contaminants:
-            print_filtered_mothur_counts(mothur_counts_fp, os.path.join(output_dir,'correlation_contaminants_mothur_counts.txt'), corr_contaminants)
-
-        if reinstated_seqs:
-            print_filtered_mothur_counts(mothur_counts_fp, os.path.join(output_dir,'reinstated_contaminants_mothur_counts.txt'), reinstated_seqs)
+    if write_output_seq_lists:
+        print_filtered_output('seq_headers', seq_ids, output_dir, output_dict)
 
 
     # print log file / per-seq info
 
     print_results_file(seq_ids,
-                       contamination_stats_header, contamination_stats_dict, 
-                       abund_contaminants,
-                       ref_contaminants,
-                       reinstated_seqs,
-                       os.path.join(output_dir,'contamination_summary.txt'))
+                       output_dict,
+                       os.path.join(output_dir,'contamination_summary.txt'),
+                       contamination_stats_header,
+                       contamination_stats_dict,
+                       corr_data_dict)
 
-    # print fasta files if requested
+
 
 
 

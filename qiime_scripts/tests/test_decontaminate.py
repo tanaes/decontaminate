@@ -158,6 +158,7 @@ class DecontaminationTests(TestCase):
 
         self.assertEqual(test_counts_biom, obs_counts_biom)
 
+
     def test_pick_ref_contaminants(self):
         """Test the reference-based contaminant search"""
 

@@ -13,6 +13,7 @@ from biom import load_table
 from bfillings.uclust import get_clusters_from_fasta_filepath
 from bfillings.usearch import usearch_qf
 from scipy.stats import spearmanr
+import os.path
 
 def pick_ref_contaminants(queries, ref_db_fp, input_fasta_fp, contaminant_similarity, output_dir):
     # Blast against contaminant DB
@@ -176,16 +177,21 @@ def print_filtered_mothur_counts(mothur_counts_fp, output_counts_fp, filter_set)
     output_counts_f = open(output_counts_fp, 'w')
 
     t = 0
+
     for line in open(mothur_counts_fp, 'U'):
         # print header line
-        if t = 0:
+        if t == 0:
+            t += 1
             continue
 
         seq_identifier = line.strip().split('\t')[0]
+
         # only write this line if the otu has more than n sequences (so
         # greater than n tab-separated fields including the otu identifier)
         if seq_identifier in filter_set:
             output_counts_f.write(line)
+        t += 1
+
     output_counts_f.close()
     return
 
@@ -202,35 +208,71 @@ def print_filtered_seq_headers(seq_headers, output_headers_fp, filter_set):
     return
 
 
-def print_filtered_output(output_method, unfiltered_input, output_dir, output_dict, output_categories=output_dict.keys()):
+def print_filtered_output(output_method, unfiltered_input, output_dir, output_dict, output_categories=None):
     output_fn = 'print_filtered_' + output_method
+
+    if not output_categories:
+        output_categories = output_dict.keys()
+
+    if output_method == 'seq_headers':
+        output_fn = print_filtered_seq_headers
+    elif output_method == 'mothur_counts':
+        output_fn = print_filtered_mothur_counts
+    elif output_method == 'otu_map':
+        output_fn = print_filtered_otu_map
 
     for category in output_categories:
         output_fn(unfiltered_input,
-                  os.join(output_dir,
-                          '{0}_{1}.txt'.format(category, output_method),
+                  os.path.join(output_dir,
+                          '{0}_{1}.txt'.format(category, output_method)),
                   output_dict[category])
+    return
 
-    retur
 
-def print_results_file(seq_list, 
-                       stats_header, stats_dict, 
-                       abund_contaminants,
-                       ref_contaminants,
-                       reinstated_seqs, output_fp):
+def print_results_file(seq_ids,
+                       output_dict,
+                       output_fp,
+                       stats_header=None,
+                       stats_dict=None,
+                       corr_data_dict=None):
     
     output_f = open(output_fp, 'w')
-    header = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n".format('SeqID',
-             stats_header[0],stats_header[1],stats_header[2],stats_header[3],
-             'Abund_contaminant','Ref_contaminant','Reinstated')
-    output_f.write(header)
-    for otu in seq_list:
-        outline = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n".format(str(otu),
-             stats_dict[otu][0],stats_dict[otu][1],stats_dict[otu][2],stats_dict[otu][3],
-             1 if otu in abund_contaminants else 0,
-             1 if otu in ref_contaminants else 0,
-             1 if otu in reinstated_seqs else 0)
-        output_f.write(outline)
+
+    header = "SeqID"
+
+    sorted_categories = sorted(output_dict.keys())
+
+    for category in sorted_categories:
+        header += '\t{0}'.format(category)
+
+    if stats_header:
+        for x in stats_header:
+            header += '\t{0}'.format(x)
+
+    if corr_data_dict:
+        header += '\t{0}\t{1}'.format('spearman_r','spearman_p')
+
+    output_f.write(header + '\n')
+
+    for otu in seq_ids:
+        outline = str(otu)
+
+        for category in sorted_categories:
+            outline += '\t{0}'.format(1 if otu in output_dict[category] else 0)
+
+        if stats_header:
+            outline += '\t{0}\t{1}\t{2}\t{3}'.format(
+                                                     stats_dict[otu][0],
+                                                     stats_dict[otu][1],
+                                                     stats_dict[otu][2],
+                                                     stats_dict[otu][3])
+
+        if corr_data_dict:
+            outline += '\t{0}\t{1}'.format(
+                                           corr_data_dict[otu][0],
+                                           corr_data_dict[otu][1])
+
+        output_f.write(outline + '\n')
 
     return
 
