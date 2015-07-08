@@ -15,9 +15,9 @@ from numpy import array
 from numpy.testing import assert_almost_equal, assert_allclose
 
 
-from biom import load_table
+from biom import load_table, parse_table
 
-from decontaminate import get_contamination_stats, compare_blank_abundances, mothur_counts_to_biom
+from decontaminate import get_contamination_stats, compare_blank_abundances, mothur_counts_to_biom, pick_ref_contaminants, reinstate_abund_seqs, reinstate_incidence_seqs, pick_corr_contaminants
 
 def assertDeepAlmostEqual(test_case, expected, actual, *args, **kwargs):
     """
@@ -68,7 +68,82 @@ class DecontaminationTests(TestCase):
         """Init variables for the tests """
         test_biom_fp = '/Users/jonsanders/Development/git_sw/qiime/qiime_test_data/decontaminate/test_otu_table.biom'
 
-        test_biom = load_table(test_biom_fp)
+        self.test_biom = parse_table(test_biom_file)
+
+    def test_pick_corr_contaminants(self):
+
+        corr_data_dict = {'Blank1': 0, 'Blank2': 1, 'Sample1': 2, 'Sample2': 3}
+
+        test_biom = self.test_biom
+
+        exp_corr_contaminants = set(['contam1','contam2','contam4'])
+
+        exp_corr_dict = {u'otu1': (0.8, 0.2),
+                         u'otu2': (0.6, 0.4),
+                         u'otu3': (-0.4, 0.6),
+                         u'otu4': (0.2581988897471611, 0.7418011102528389),
+                         u'contam1': (-0.8, 0.2),
+                         u'contam2': (-1.0, 0.0),
+                         u'contam3': (0.4, 0.6),
+                         u'contam4': (-0.89442719099991586, 0.10557280900008413)}
+
+        obs_corr_contaminants, obs_corr_dict = pick_corr_contaminants(test_biom,
+                                                           corr_data_dict,
+                                                           -0.6)
+
+        self.assertEqual(obs_corr_contaminants, exp_corr_contaminants)
+        assertDeepAlmostEqual(self, obs_corr_dict, exp_corr_dict)
+
+
+    def test_reinstate_abund_seqs(self):
+
+        putative_contaminants = set(['otu1','otu2','otu3','contam1','contam2','contam3','contam4'])
+
+        contamination_stats_dict = exp_contamination_stats_dict
+
+        contamination_stats_header = exp_contamination_header
+
+
+        exp_abund_reinstated_seqs_max = set(['otu1','otu2','otu3'])
+
+        obs_abund_reinstated_seqs_max = reinstate_abund_seqs(putative_contaminants, 
+                         contamination_stats_dict, 
+                         contamination_stats_header,
+                         'maxS',
+                         'maxB',
+                         1)
+
+        self.assertEqual(exp_abund_reinstated_seqs_max, obs_abund_reinstated_seqs_max)
+
+
+        exp_abund_reinstated_seqs_avg = set(['otu1','otu2','contam3'])
+
+        obs_abund_reinstated_seqs_avg = reinstate_abund_seqs(putative_contaminants, 
+                         contamination_stats_dict, 
+                         contamination_stats_header,
+                         'avgS',
+                         'avgB',
+                         1)
+
+        self.assertEqual(exp_abund_reinstated_seqs_avg, obs_abund_reinstated_seqs_avg)
+
+    def test_reinstate_incidence_seqs(self):
+
+        test_biom = self.test_biom
+
+        blank_sample_ids = ['Blank1', 'Blank2']
+
+        putative_contaminants = set(['otu1','otu2','otu3','contam1','contam2','contam3','contam4'])
+
+        exp_incidence_reinstated_seqs = set(['otu1','otu2','contam3'])
+
+        obs_incidence_reinstated_seqs = reinstate_incidence_seqs(
+                         putative_contaminants,
+                         test_biom,
+                         blank_sample_ids,
+                         2)
+
+        self.assertEqual(exp_incidence_reinstated_seqs, obs_incidence_reinstated_seqs)
 
 
     def test_mothur_counts_to_biom(self):
@@ -83,16 +158,48 @@ class DecontaminationTests(TestCase):
 
         self.assertEqual(test_counts_biom, obs_counts_biom)
 
+    def test_pick_ref_contaminants(self):
+        """Test the reference-based contaminant search"""
+
+        test_queries = set(['denovo47', 'denovo46', 'denovo27', 'denovo26', 'denovo25', 'denovo24', 'denovo23', 'denovo22', 'denovo21', 'denovo20', 'denovo49', 'denovo48', 'denovo29', 'denovo28', 'denovo0', 'denovo1', 'denovo2', 'denovo3', 'denovo4', 'denovo5', 'denovo6', 'denovo7', 'denovo8', 'denovo9', 'denovo18', 'denovo19', 'denovo12', 'denovo13', 'denovo10', 'denovo11', 'denovo16', 'denovo17', 'denovo14', 'denovo15', 'denovo34', 'denovo35', 'denovo36', 'denovo37', 'denovo30', 'denovo31', 'denovo32', 'denovo33', 'denovo38', 'denovo39', 'denovo50', 'denovo51', 'denovo41', 'denovo40', 'denovo43', 'denovo42', 'denovo52', 'denovo45', 'denovo44'])
+
+        test_ref_db_fp = '/Users/jonsanders/Development/git_sw/decontaminate/qiime_scripts/qiime_test_data/decontaminate/blanks_rep_set.filtered.fna'
+
+        test_input_fasta_fp = '/Users/jonsanders/Development/git_sw/decontaminate/qiime_scripts/qiime_test_data/decontaminate/unique_seqs_rep_set.fna'
+
+        test_output_dir = '/Users/jonsanders/Development/git_sw/decontaminate/qiime_scripts/qiime_test_data/decontaminate/testout'
+
+        # Test at 97% ID level
+
+        exp_hits_97 = set(['denovo20', 'denovo41', 'denovo26', 'denovo25', 'denovo24', 'denovo23', 'denovo44', 'denovo46', 'denovo48', 'denovo28', 'denovo0', 'denovo1', 'denovo2', 'denovo3', 'denovo4', 'denovo5', 'denovo6', 'denovo7', 'denovo8', 'denovo9', 'denovo18', 'denovo19', 'denovo12', 'denovo13', 'denovo10', 'denovo16', 'denovo17', 'denovo14', 'denovo15', 'denovo34', 'denovo35', 'denovo36', 'denovo30', 'denovo31', 'denovo33', 'denovo38', 'denovo39', 'denovo51', 'denovo40', 'denovo42', 'denovo52', 'denovo45'])
+
+        obs_hits_97 = pick_ref_contaminants(test_queries, test_ref_db_fp, test_input_fasta_fp, 0.97, test_output_dir)
+
+        self.assertEqual(exp_hits_97, obs_hits_97)
+
+        # Test at 99% ID level
+
+        exp_hits_99 = set(['denovo20', 'denovo41', 'denovo40', 'denovo25', 'denovo24', 'denovo23', 'denovo46', 'denovo48', 'denovo0', 'denovo2', 'denovo4', 'denovo5', 'denovo6', 'denovo7', 'denovo12', 'denovo13', 'denovo10', 'denovo14', 'denovo15', 'denovo34', 'denovo36', 'denovo33', 'denovo52', 'denovo39', 'denovo51', 'denovo42'])
+
+        obs_hits_99 = pick_ref_contaminants(test_queries, test_ref_db_fp, test_input_fasta_fp, 0.99, test_output_dir)
+
+        self.assertEqual(exp_hits_99, obs_hits_99)
+
+        # Test at 100% ID level
+
+        exp_hits_100 = set(['denovo14', 'denovo25', 'denovo42', 'denovo20', 'denovo48'])
+
+        obs_hits_100 = pick_ref_contaminants(test_queries, test_ref_db_fp, test_input_fasta_fp, 1.00, test_output_dir)
+
+        self.assertEqual(exp_hits_100, obs_hits_100)
 
     def test_get_contamination_stats(self):
         """add_contamination_stats_to_biom: 
         """
-        test_biom_fp = '/Users/jonsanders/Development/git_sw/qiime/qiime_test_data/decontaminate/test_otu_table.biom'
-
-        test_biom = load_table(test_biom_fp)
-                # print('testing contamination')
 
         blank_sample_ids = ['Blank1', 'Blank2']
+
+        test_biom = self.test_biom
 
         # test when passing already-proportional table
 
@@ -131,9 +238,11 @@ class DecontaminationTests(TestCase):
 
         contamination_stats_dict = exp_contamination_stats_dict
 
+        contamination_header = exp_contamination_header
+
         # test for maxS > maxB
         passed_seqs = compare_blank_abundances(contamination_stats_dict,
-                                 exp_contamination_header,
+                                 contamination_header,
                                  sample_stat = 'maxS',
                                  blank_stat = 'maxB',
                                  scalar = 1,
@@ -144,7 +253,7 @@ class DecontaminationTests(TestCase):
 
         # test for maxS > avgB
         passed_seqs = compare_blank_abundances(contamination_stats_dict,
-                                 exp_contamination_header,
+                                 contamination_header,
                                  sample_stat = 'maxS',
                                  blank_stat = 'avgB',
                                  scalar = 1,
@@ -155,7 +264,7 @@ class DecontaminationTests(TestCase):
 
         # test for avgS > avgB
         passed_seqs = compare_blank_abundances(contamination_stats_dict,
-                                 exp_contamination_header,
+                                 contamination_header,
                                  sample_stat = 'avgS',
                                  blank_stat = 'avgB',
                                  scalar = 1,
@@ -166,7 +275,7 @@ class DecontaminationTests(TestCase):
 
         # test for avgS > maxB
         passed_seqs = compare_blank_abundances(contamination_stats_dict,
-                                 exp_contamination_header,
+                                 contamination_header,
                                  sample_stat = 'avgS',
                                  blank_stat = 'maxB',
                                  scalar = 1,

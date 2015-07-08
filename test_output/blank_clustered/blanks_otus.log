@@ -1,6 +1,6 @@
 UclustOtuPicker parameters:
 Application:uclust
-Similarity:0.97
+Similarity:1.0
 enable_rev_strand_matching:False
 exact:False
 max_accepts:1
@@ -15,5 +15,5 @@ stable_sort:True
 stepwords:8
 suppress_sort:True
 word_length:8
-Num OTUs:5
+Num OTUs:10
 Result path: ./test_output/blank_clustered/blanks_otus.txt

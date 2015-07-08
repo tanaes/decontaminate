@@ -16,7 +16,7 @@ mapping_fp=./test_data/test_seqs_sample_map.txt
 blank_category='Blank:1'
 
 # OTU picking width for clustering Blanks
-blank_cluster_pid=.97
+blank_cluster_pid=1
 
 # Minimum abundance in Blanks for blank OTU to be considered a potential contaminant
 min_blank_pct=.01

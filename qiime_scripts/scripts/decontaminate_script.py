@@ -20,7 +20,7 @@ from qiime.filter import sample_ids_from_metadata_description
 from bfillings.uclust import get_clusters_from_fasta_filepath
 from bfillings.usearch import usearch_qf
  
-from decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file 
+from decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file, pick_ref_contaminants
 
 from biom import load_table
 
@@ -250,9 +250,6 @@ def main():
 
     sample_sample_ids = set(unique_seq_biom.ids(axis='sample')) - set(blank_sample_ids)
 
-    print(set(unique_seq_biom.ids(axis='sample')))
-    print(set(blank_sample_ids))
-
     sample_biom = unique_seq_biom.filter(lambda val, id_, metadata: 
         id_ in blank_sample_ids, invert=True, inplace=False)
 
@@ -274,31 +271,13 @@ def main():
                                 removal_differential,
                                 negate=False)
 
+    # ADD METHOD CALL TO REFERENCE-BASED FILTER
+
+
     # Blast against contaminant DB
     if contaminant_db_fp:
-        clusters, failures, seeds = get_clusters_from_fasta_filepath(
-            input_fasta_fp,
-            input_fasta_fp,
-            percent_ID=contaminant_similarity,
-            max_accepts=1,
-            max_rejects=8, 
-            stepwords=8,
-            word_length=8,
-            optimal=False,
-            exact=False,
-            suppress_sort=False,
-            output_dir=output_dir,
-            enable_rev_strand_matching=False,
-            subject_fasta_filepath=contaminant_db_fp,
-            suppress_new_clusters=True,
-            return_cluster_maps=True,
-            stable_sort=False,
-            save_uc_files=True,
-            HALT_EXEC=False)
-
-        # Pick seqs that fail the similarity to contaminants rule
-
-        ref_contaminants = set(unique_seq_biom.ids(axis='observation')) - set(failures)
+        ref_contaminants = pick_ref_contaminants(unique_seq_biom.ids(axis='observation'), contaminant_db_fp, input_fasta_fp, contaminant_similarity, output_dir)
+        # ref_contaminants = set(unique_seq_biom.ids(axis='observation')) - set(pick_ref_contaminants(contaminant_db_fp, input_fasta_fp, contaminant_similarity, output_dir))
 
         # Pick seqs from similarity search to reinstate
         if (reinstatement_stat_blank and reinstatement_stat_sample and reinstatement_differential):

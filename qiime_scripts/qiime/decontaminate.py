@@ -10,6 +10,108 @@ __maintainer__ = "Jon Sanders"
 __email__ = "jonsan@gmail.com"
 
 from biom import load_table
+from bfillings.uclust import get_clusters_from_fasta_filepath
+from bfillings.usearch import usearch_qf
+from scipy.stats import spearmanr
+
+def pick_ref_contaminants(queries, ref_db_fp, input_fasta_fp, contaminant_similarity, output_dir):
+    # Blast against contaminant DB
+
+    clusters, failures, seeds = get_clusters_from_fasta_filepath(
+        input_fasta_fp,
+        input_fasta_fp,
+        percent_ID=contaminant_similarity,
+        max_accepts=1,
+        max_rejects=8, 
+        stepwords=8,
+        word_length=8,
+        optimal=False,
+        exact=False,
+        suppress_sort=False,
+        output_dir=output_dir,
+        enable_rev_strand_matching=False,
+        subject_fasta_filepath=ref_db_fp,
+        suppress_new_clusters=True,
+        return_cluster_maps=True,
+        stable_sort=False,
+        save_uc_files=True,
+        HALT_EXEC=False)
+
+    # Pick seqs that fail the similarity to contaminants rule
+
+    ref_contaminants = set(queries) - set(failures)
+
+    return(ref_contaminants)
+
+def pick_corr_contaminants(sample_biom,
+                           corr_data_dict,
+                           max_r):
+    
+    # Filter biom to only samples for which correlate data available
+    sample_biom_filt = sample_biom.filter(
+        lambda val, id_, metadata: id_ in corr_data_dict, 
+        invert=False,
+        inplace=False)
+
+    otus = sample_biom_filt.ids(axis='observation')
+    samples = sample_biom_filt.ids(axis='sample')
+
+    # Make array of correlate data in same order as biom file
+    correlate = [corr_data_dict[x] for x in samples]
+
+    obs_corr_dict = {}
+
+    # Make a 2D array of normalized biom table values
+    norm_array = sample_biom_filt.norm(inplace=False).matrix_data.toarray()
+
+    t = 0
+
+    for otu in otus:
+        obs_corr_dict[otu] = spearmanr(norm_array[t], correlate)
+
+        t += 1
+
+    # get keys (otu names) for OTUs with less than minimum correlation
+    obs_corr_contaminants = [x for x in obs_corr_dict if obs_corr_dict[x][0] < max_r]
+
+    return(set(obs_corr_contaminants), obs_corr_dict)
+
+def reinstate_abund_seqs(putative_contaminants, 
+                         contamination_stats_dict, 
+                         contamination_stats_header,
+                         reinstatement_stat_sample,
+                         reinstatement_stat_blank,
+                         reinstatement_differential):
+
+    abund_reinstated_seqs = compare_blank_abundances(contamination_stats_dict, 
+                            contamination_stats_header,
+                            reinstatement_stat_sample,
+                            reinstatement_stat_blank,
+                            reinstatement_differential,
+                            negate=False)
+    
+    # Only consider seqs as reinstated if previously identified as contaminants
+    abund_reinstated_seqs = set(putative_contaminants) & set(abund_reinstated_seqs)
+
+    return(abund_reinstated_seqs)
+
+def reinstate_incidence_seqs(putative_contaminants,
+                         unique_seq_biom,
+                         blank_sample_ids,
+                         reinstatement_sample_number):
+    
+    sample_biom = unique_seq_biom.filter(lambda val, id_, metadata: 
+        id_ in blank_sample_ids, invert=True, inplace=False)
+
+    incidence_reinstated_seqs = sample_biom.pa().filter(
+            lambda val, id_, metadata: val.sum() >= reinstatement_sample_number,
+            axis='observation', inplace=False).ids(
+            axis='observation')
+
+    # Only consider seqs as reinstated if previously identified as contaminants
+    incidence_reinstated_seqs = set(putative_contaminants) & set(incidence_reinstated_seqs)
+
+    return(incidence_reinstated_seqs)
 
 def mothur_counts_to_biom(mothur_fp):
 

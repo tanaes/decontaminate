@@ -1,5 +1,10 @@
-denovo0	SHNZ_91
-denovo1	SHNO_84	SHNO_88	SHNO_92	SHNO_85	SHNO_86
-denovo2	SHNO_93
-denovo3	SHNO_89
-denovo4	SHNZ_61	SHNZ_62	SHNZ_63	SHNZ_64	SHNO_87	SHNZ_90
+denovo0	SHNZ_90
+denovo1	SHNZ_91
+denovo2	SHNO_87
+denovo3	SHNO_86
+denovo4	SHNO_85
+denovo5	SHNO_84	SHNO_88
+denovo6	SHNO_92
+denovo7	SHNO_93
+denovo8	SHNO_89
+denovo9	SHNZ_61	SHNZ_62	SHNZ_63	SHNZ_64
