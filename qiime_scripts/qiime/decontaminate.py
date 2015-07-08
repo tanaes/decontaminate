@@ -123,28 +123,45 @@ def mothur_counts_to_biom(mothur_fp):
 
     return(filter_biom)
 
-def get_contamination_stats(biom_file, blank_sample_ids, proportional=False):
+def get_contamination_stats(biom_file, blank_sample_ids=None, proportional=False):
     if not proportional:
         biom_file = biom_file.norm()
 
-    blank_data = biom_file.filter(blank_sample_ids, axis='sample', 
-        invert=False, inplace=False).matrix_data
+    header = ['maxS','avgS']
+
+    if blank_sample_ids:
+        blanks = True
+
+        blank_data = biom_file.filter(blank_sample_ids, axis='sample', 
+                                      invert=False, inplace=False).matrix_data
+        maxB = blank_data.max(axis=1).todense().tolist()
+        avgB = blank_data.mean(axis=1).tolist()
+
+        header.append('maxB')
+        header.append('avgB')
+    else:
+        blank_sample_ids = []
+        blanks = False
 
     sample_data = biom_file.filter(blank_sample_ids, axis='sample', 
         invert=True, inplace=False).matrix_data
 
     maxS = sample_data.max(axis=1).todense().tolist()
-    maxB = blank_data.max(axis=1).todense().tolist()
     avgS = sample_data.mean(axis=1).tolist()
-    avgB = blank_data.mean(axis=1).tolist()
 
     stats_dict = {}
-    i = 0
-    for otu in biom_file.ids(axis='observation'):
-        stats_dict[otu] = [maxS[i][0], avgS[i][0], maxB[i][0], avgB[i][0]]
-        i += 1
 
-    return(['maxS','avgS','maxB','avgB'], stats_dict)
+    i = 0
+    if blanks:
+        for otu in biom_file.ids(axis='observation'):
+            stats_dict[otu] = [maxS[i][0], avgS[i][0], maxB[i][0], avgB[i][0]]
+            i += 1
+    else:
+        for otu in biom_file.ids(axis='observation'):
+            stats_dict[otu] = [maxS[i][0], avgS[i][0]]
+            i += 1
+
+    return(header, stats_dict)
 
 def compare_blank_abundances(stats_dict, stats_header,
                             sample_stat, blank_stat, scalar=1, negate=False):
@@ -261,11 +278,10 @@ def print_results_file(seq_ids,
             outline += '\t{0}'.format(1 if otu in output_dict[category] else 0)
 
         if stats_header:
-            outline += '\t{0}\t{1}\t{2}\t{3}'.format(
-                                                     stats_dict[otu][0],
-                                                     stats_dict[otu][1],
-                                                     stats_dict[otu][2],
-                                                     stats_dict[otu][3])
+            t = 0
+            for x in stats_header:
+                outline += '\t{0}'.format(stats_dict[otu][t])
+                t += 1
 
         if corr_data_dict:
             outline += '\t{0}\t{1}'.format(
