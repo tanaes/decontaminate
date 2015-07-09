@@ -199,6 +199,7 @@ class DecontaminationTests(TestCase):
 
         self.assertEqual(exp_exclude_libs, set(obs_exclude_libs))
 
+
     def test_pick_ref_contaminants(self):
         """Test the reference-based contaminant search"""
 
@@ -242,12 +243,10 @@ class DecontaminationTests(TestCase):
 
         test_biom = self.test_biom
 
+
         # test when passing already-proportional table
 
         (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, blank_sample_ids, proportional=True)
-
-        # obs_contamination_header = exp_contamination_header
-        # obs_contamination_stats_dict = exp_contamination_stats_dict
 
         # Header is as expected
         self.assertItemsEqual(exp_contamination_header,
@@ -257,12 +256,10 @@ class DecontaminationTests(TestCase):
         self.assertDictEqual(exp_contamination_stats_dict,
                               obs_contamination_stats_dict)
         
+
         # test when passing non-proportional table
 
         (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, blank_sample_ids, proportional=False)
-
-        # obs_contamination_header = exp_contamination_header
-        # obs_contamination_stats_dict = exp_contamination_stats_dict
 
         # Header is as expected
         self.assertItemsEqual(exp_contamination_header,
@@ -271,6 +268,35 @@ class DecontaminationTests(TestCase):
         # Contamination stats dict is as expected
         assertDeepAlmostEqual(self,exp_contamination_stats_dict_prop,
                               obs_contamination_stats_dict)
+
+
+        # test when passing no blank information
+
+        (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, proportional=True)
+
+        # Header is as expected
+        self.assertItemsEqual(['maxS','avgS'],
+                              obs_contamination_header)
+
+        # Contamination stats dict is as expected
+        assertDeepAlmostEqual(self, exp_contam_stats_dict_noblanks,
+                              obs_contamination_stats_dict)
+
+
+        # test when passing specified samples information
+
+        (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, blank_sample_ids, exp_sample_ids=['Sample2'], proportional=True)
+
+        # Header is as expected
+        self.assertItemsEqual(exp_contamination_header,
+                              obs_contamination_header)
+
+        # Contamination stats dict is as expected
+        assertDeepAlmostEqual(self, exp_contam_stats_dict_sample,
+                              obs_contamination_stats_dict)
+        
+
+
 
     def test_compare_blank_abundances(self):
         """examine contamination stats dict for sequences that fail a specificied
@@ -347,6 +373,8 @@ test_biom_file = """{"id": "None","format": "Biological Observation Matrix 1.0.0
 
 exp_contamination_header = ['maxS', 'avgS','maxB','avgB']
 exp_contamination_stats_dict = {'otu1': [4,3,1,0.5], 'otu2': [6,3.5,4,2.5], 'otu3': [6,3,4,3.5], 'otu4': [3,1.5,0,0], 'contam1': [1,0.5,4,3], 'contam2': [3,1.5,4,2.5], 'contam3': [3,2.5,4,2], 'contam4': [0,0,3,2]}
+exp_contam_stats_dict_noblanks = {'otu1': [4.00,1.75], 'otu2': [6.00,3.00], 'otu3': [6.00,3.25], 'otu4': [3.00,0.75], 'contam1': [4.00,1.75], 'contam2': [4.00,2.00], 'contam3': [4.00,2.25], 'contam4': [3.00,1.00]}
+exp_contam_stats_dict_sample = {'otu1': [2.0,2.0, 1.0, 0.5],'otu2': [1.0,1.0, 4.0, 2.5],'otu3': [0.0,0.0, 4.0, 3.5],'otu4': [0.0,0.0, 0.0, 0.0],'contam1': [0.0,0.0, 4.0, 3.0],'contam2': [0.0,0.0, 4.0, 2.5],'contam3': [2.0,2.0, 4.0, 2.0],'contam4': [0.0,0.0, 3.0, 2.0]}
 exp_contamination_stats_dict_prop = {'otu1': [0.4,0.276923076923077,0.0416666666666667,0.0208333333333333], 'otu2': [0.230769230769231,0.215384615384615,0.166666666666667,0.145833333333333], 'otu3': [0.230769230769231,0.115384615384615,0.375,0.270833333333333], 'otu4': [0.115384615384615,0.0576923076923077,0,0], 'contam1': [0.0384615384615385,0.0192307692307692,0.25,0.208333333333333], 'contam2': [0.115384615384615,0.0576923076923077,0.166666666666667,0.145833333333333], 'contam3': [0.4,0.257692307692308,0.166666666666667,0.0833333333333333], 'contam4': [0,0,0.125,0.125]} 
 
 test_sample_map = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tBlank\tAbund\tDescription\nBlank1\tAACCGCAT\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t1\t0\tBlank1\nBlank2\tAACCGCAC\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t1\t1\tBlank2\nSample1\tAACCGCAA\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t0\t2\tSample1\nSample2\tAACCGCAG\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t0\t3\tSample2\n"""

@@ -161,7 +161,7 @@ def prescreen_libraries(unique_seq_biom,
 
 def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=None, proportional=False):
     if not proportional:
-        biom_file = biom_file.norm()
+        biom_file = biom_file.norm(inplace=False)
 
     header = ['maxS','avgS']
 
