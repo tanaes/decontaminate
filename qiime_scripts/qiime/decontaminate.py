@@ -130,29 +130,30 @@ def prescreen_libraries(unique_seq_biom,
                         removal_stat_blank, 
                         removal_stat_sample, 
                         removal_differential, 
-                        presecreen_threshold):
+                        prescreen_threshold):
 
     contamination_stats_header, contamination_stats_dict = \
             get_contamination_stats(unique_seq_biom, blank_sample_ids)
 
     abund_contaminants = compare_blank_abundances(contamination_stats_dict, 
                                 contamination_stats_header,
-                                removal_stat_blank,
                                 removal_stat_sample,
+                                removal_stat_blank,
                                 removal_differential,
-                                negate=False)
+                                negate=True)
 
     # make relabund table
     norm_biom = unique_seq_biom.norm(inplace = False)
 
     # filter out sequences marked as contaminants
     norm_biom.filter(lambda val, id_, metadata: id_ in abund_contaminants,
-                     axis='observation', invert=False, inplace=True)
+                     axis='observation', invert=True, inplace=True)
 
-    # filter out samples below threshold
-    norm_biom.filter(lambda val, id_, metadata: sum(val) < presecreen_threshold,
-                          axis='sample', invert=True, inplace=True)
+    # filter out samples above threshold
+    norm_biom.filter(lambda val, id_, metadata: sum(val) < prescreen_threshold,
+                          axis='sample', invert=False, inplace=True)
 
+    # Now only have samples failing the prescreening
     below_threshold_samples = norm_biom.ids(axis='sample')
 
     return below_threshold_samples

@@ -183,9 +183,9 @@ class DecontaminationTests(TestCase):
                                                removal_stat_blank = 'maxB',
                                                removal_stat_sample = 'maxS',
                                                removal_differential = 1,
-                                               presecreen_threshold = 0.65)
+                                               prescreen_threshold = 0.65)
 
-        self.assertEqual(exp_exclude_libs, obs_exclude_libs)
+        self.assertEqual(exp_exclude_libs, set(obs_exclude_libs))
 
 
         exp_exclude_libs = set(['Blank1', 'Blank2'])
@@ -195,9 +195,9 @@ class DecontaminationTests(TestCase):
                                                removal_stat_blank = 'maxB',
                                                removal_stat_sample = 'maxS',
                                                removal_differential = 1,
-                                               presecreen_threshold = 0.5)
+                                               prescreen_threshold = 0.5)
 
-        self.assertEqual(exp_exclude_libs, obs_exclude_libs)
+        self.assertEqual(exp_exclude_libs, set(obs_exclude_libs))
 
     def test_pick_ref_contaminants(self):
         """Test the reference-based contaminant search"""
