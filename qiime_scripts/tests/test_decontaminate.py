@@ -171,6 +171,22 @@ class DecontaminationTests(TestCase):
         self.assertEqual(test_counts_biom, obs_counts_biom)
 
 
+    def test_prescreen_libraries(self):
+        """Test pre-screening libraries for contamination"""
+
+        unique_seq_biom = self.test_biom
+
+        exp_exclude_libs = set(['Blank1', 'Blank2', 'Sample2'])
+
+        obs_exclude_libs = prescreen_libraries(unique_seq_biom,
+                                               blank_sample_ids = ['Blank1','Blank2'],
+                                               removal_stat_blank = 'maxB',
+                                               removal_stat_sample = 'maxS',
+                                               removal_differential = 1,
+                                               presecreen_threshold = 0.65)
+
+        self.assertEqual(exp_exclude_libs, obs_exclude_libs)
+
     def test_pick_ref_contaminants(self):
         """Test the reference-based contaminant search"""
 
@@ -263,6 +279,15 @@ class DecontaminationTests(TestCase):
         
         self.assertItemsEqual(['otu1','otu2','otu3','otu4'],passed_seqs)
 
+        # test for maxS > maxB w/ negate
+        rejected_seqs = compare_blank_abundances(contamination_stats_dict,
+                                 contamination_header,
+                                 sample_stat = 'maxS',
+                                 blank_stat = 'maxB',
+                                 scalar = 1,
+                                 negate = True)
+        
+        self.assertItemsEqual(['contam1','contam2','contam3','contam4'],rejected_seqs)
 
         # test for maxS > avgB
         passed_seqs = compare_blank_abundances(contamination_stats_dict,
@@ -274,6 +299,15 @@ class DecontaminationTests(TestCase):
         
         self.assertItemsEqual(['otu1','otu2','otu3','otu4','contam2','contam3'],passed_seqs)
 
+        # test for maxS > avgB w/ negate
+        rejected_seqs = compare_blank_abundances(contamination_stats_dict,
+                                 contamination_header,
+                                 sample_stat = 'maxS',
+                                 blank_stat = 'avgB',
+                                 scalar = 1,
+                                 negate = True)
+        
+        self.assertItemsEqual(['contam1','contam4'],rejected_seqs)
 
         # test for avgS > avgB
         passed_seqs = compare_blank_abundances(contamination_stats_dict,

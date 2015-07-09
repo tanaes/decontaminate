@@ -44,6 +44,7 @@ def pick_ref_contaminants(queries, ref_db_fp, input_fasta_fp, contaminant_simila
 
     return(ref_contaminants)
 
+
 def pick_corr_contaminants(sample_biom,
                            corr_data_dict,
                            max_r):
@@ -123,6 +124,40 @@ def mothur_counts_to_biom(mothur_fp):
 
     return(filter_biom)
 
+
+def prescreen_libraries(unique_seq_biom,
+                        blank_sample_ids,
+                        removal_stat_blank, 
+                        removal_stat_sample, 
+                        removal_differential, 
+                        presecreen_threshold):
+
+    contamination_stats_header, contamination_stats_dict = \
+            get_contamination_stats(unique_seq_biom, blank_sample_ids)
+
+    abund_contaminants = compare_blank_abundances(contamination_stats_dict, 
+                                contamination_stats_header,
+                                removal_stat_blank,
+                                removal_stat_sample,
+                                removal_differential,
+                                negate=False)
+
+    # make relabund table
+    norm_biom = unique_seq_biom.norm(inplace = False)
+
+    # filter out sequences marked as contaminants
+    norm_biom.filter(lambda val, id_, metadata: id_ in abund_contaminants,
+                     axis='observation', invert=False, inplace=True)
+
+    # filter out samples below threshold
+    norm_biom.filter(lambda val, id_, metadata: sum(val) < presecreen_threshold,
+                          axis='sample', invert=True, inplace=True)
+
+    below_threshold_samples = norm_biom.ids(axis='sample')
+
+    return below_threshold_samples
+
+
 def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=None, proportional=False):
     if not proportional:
         biom_file = biom_file.norm()
@@ -185,18 +220,23 @@ def pick_min_relabund_threshold(stats_dict, stats_header, min_relabund, sample_s
 
 def compare_blank_abundances(stats_dict, stats_header,
                             sample_stat, blank_stat, scalar=1, negate=False):
-    
+    """Note that this method will default to returning sequences for which
+    the criteria sample_stat > blank_stat * scalar are TRUE, i.e. non-contam
+    sequences. To return contaminants (sequences that FAIL the inequality),
+    set negate to True."""
+
     i_s = stats_header.index(sample_stat)
     i_b = stats_header.index(blank_stat)
 
     passed_otus = set()
 
     for otu in stats_dict:
-        if(float(stats_dict[otu][i_s]) > (float(scalar) * float(stats_dict[otu][i_b]))):
+        if((float(stats_dict[otu][i_s]) > (float(scalar) * float(stats_dict[otu][i_b]))) != negate):
             passed_otus.add(otu)
 
     # print passed_otus
     return(passed_otus)
+
 
 def print_filtered_otu_map(input_otu_map_fp, output_otu_map_fp, filter_set):
 
