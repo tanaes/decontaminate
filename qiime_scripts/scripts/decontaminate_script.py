@@ -20,7 +20,7 @@ from qiime.filter import sample_ids_from_metadata_description
 from bfillings.uclust import get_clusters_from_fasta_filepath
 from bfillings.usearch import usearch_qf
  
-from decontaminate import get_contamination_stats, compare_blank_abundances, print_filtered_otu_map, print_results_file, pick_ref_contaminants, reinstate_abund_seqs, reinstate_incidence_seqs, print_filtered_output, mothur_counts_to_biom
+from decontaminate import *
 
 from biom import load_table
 
@@ -137,6 +137,8 @@ script_info['optional_options'] = [
                 help=('Column header in mapping file with correlation data')),
     make_option('--min_relabund_threshold', type="float",
                 help='discard sequences below this relative abundance threshold'),
+    make_option('--prescreen_threshold', type="float",
+                help='prescreen libraries that lose more than this proportion of sequences'),
     make_option('--removal_stat_blank', type="choice", choices=["maxB", "avgB"],
                  help='blank statistic to be used for removal (maxB, avgB)'),
     make_option('--removal_stat_sample', type="choice", choices=["maxS", "avgS"],
@@ -176,6 +178,7 @@ def main():
     otu_map_fp = opts.otu_map_fp
     output_dir = opts.output_dir
     min_relabund_threshold = opts.min_relabund_threshold
+    prescreen_threshold = opts.prescreen_threshold
     removal_stat_blank = opts.removal_stat_blank
     removal_stat_sample = opts.removal_stat_sample
     removal_differential = opts.removal_differential
@@ -317,15 +320,29 @@ def main():
     contamination_stats_header = None
     corr_data_dict = None
 
-
     # Do blank-based stats calculations, if not there check to make sure no 
     # blank-dependent methods are requested:
 
     if blanks:
-        contamination_stats_header, contamination_stats_dict = \
-            get_contamination_stats(unique_seq_biom, blank_sample_ids)
+        if prescreen_threshold:
+            low_contam_libraries = prescreen_libraries(unique_seq_biom,
+                                                       blank_sample_ids,
+                                                       removal_stat_blank, 
+                                                       removal_stat_sample, 
+                                                       removal_differential, 
+                                                       prescreen_threshold)
 
-    elif (blank_stats_removal or reinstatement):
+            print(low_contam_libraries)
+
+            contamination_stats_header, contamination_stats_dict = \
+                get_contamination_stats(unique_seq_biom,
+                                        blank_sample_ids,
+                                        exp_sample_ids=low_contam_libraries)
+        else:
+            contamination_stats_header, contamination_stats_dict = \
+                get_contamination_stats(unique_seq_biom, blank_sample_ids)
+
+    elif (blank_stats_removal or reinstatement or prescreen_threshold):
         option_parser.error("Blank-based filtering requested but no blank"
                             "samples indicated in mapping file or ID file.")
     else:
@@ -344,14 +361,6 @@ def main():
                                                   contamination_stats_header,
                                                   min_relabund)
 
-    if prescreen_libraries:
-        'prescreen_contaminants' = compare_blank_abundances(contamination_stats_dict, 
-                                contamination_stats_header,
-                                removal_stat_blank,
-                                removal_stat_sample,
-                                removal_differential,
-                                negate=False)
-        
 
     if blank_stats_removal:
         output_dict['abund_contaminants'] = compare_blank_abundances(contamination_stats_dict, 

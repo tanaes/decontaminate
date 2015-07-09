@@ -159,7 +159,7 @@ def prescreen_libraries(unique_seq_biom,
     return above_threshold_samples
 
 
-def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=None, proportional=False):
+def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=[], proportional=False):
     if not proportional:
         biom_file = biom_file.norm(inplace=False)
 
@@ -184,7 +184,7 @@ def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=Non
     # If specific list of experimental sample IDs aren't provided, 
     # assume everything not marked blank is an experimental sample
 
-    if not exp_sample_ids:
+    if len(exp_sample_ids) == 0:
         exp_sample_ids = set(biom_file.ids(axis='sample')) - set(blank_sample_ids)
 
     sample_data = biom_file.filter(exp_sample_ids, axis='sample', 
