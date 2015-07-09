@@ -150,13 +150,13 @@ def prescreen_libraries(unique_seq_biom,
                      axis='observation', invert=True, inplace=True)
 
     # filter out samples above threshold
-    norm_biom.filter(lambda val, id_, metadata: sum(val) < prescreen_threshold,
+    norm_biom.filter(lambda val, id_, metadata: sum(val) > prescreen_threshold,
                           axis='sample', invert=False, inplace=True)
 
     # Now only have samples failing the prescreening
-    below_threshold_samples = norm_biom.ids(axis='sample')
+    above_threshold_samples = norm_biom.ids(axis='sample')
 
-    return below_threshold_samples
+    return above_threshold_samples
 
 
 def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=None, proportional=False):

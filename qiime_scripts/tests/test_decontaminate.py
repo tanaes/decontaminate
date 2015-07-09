@@ -176,7 +176,7 @@ class DecontaminationTests(TestCase):
 
         unique_seq_biom = self.test_biom
 
-        exp_exclude_libs = set(['Blank1', 'Blank2', 'Sample1'])
+        exp_exclude_libs = set(['Sample2'])
 
         obs_exclude_libs = prescreen_libraries(unique_seq_biom,
                                                blank_sample_ids = ['Blank1','Blank2'],
@@ -188,7 +188,7 @@ class DecontaminationTests(TestCase):
         self.assertEqual(exp_exclude_libs, set(obs_exclude_libs))
 
 
-        exp_exclude_libs = set(['Blank1', 'Blank2'])
+        exp_exclude_libs = set(['Sample1', 'Sample2'])
 
         obs_exclude_libs = prescreen_libraries(unique_seq_biom,
                                                blank_sample_ids = ['Blank1','Blank2'],
