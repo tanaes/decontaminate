@@ -17,7 +17,7 @@ from numpy.testing import assert_almost_equal, assert_allclose
 
 from biom import load_table, parse_table
 
-from decontaminate import get_contamination_stats, compare_blank_abundances, mothur_counts_to_biom, pick_ref_contaminants, reinstate_abund_seqs, reinstate_incidence_seqs, pick_corr_contaminants
+from decontaminate import *
 
 def assertDeepAlmostEqual(test_case, expected, actual, *args, **kwargs):
     """
@@ -69,6 +69,18 @@ class DecontaminationTests(TestCase):
         test_biom_fp = '/Users/jonsanders/Development/git_sw/qiime/qiime_test_data/decontaminate/test_otu_table.biom'
 
         self.test_biom = parse_table(test_biom_file)
+
+    def test_pick_min_relabund_threshold(self):
+
+        contamination_header = exp_contamination_header
+
+        contamination_stats_dict = exp_contamination_stats_dict_prop
+
+        exp_below_threshold_seqs = set(['contam1','contam4'])
+
+        obs_below_threshold_seqs = pick_min_relabund_threshold(contamination_stats_dict, exp_contamination_header, 0.1)
+
+        self.assertEqual(exp_below_threshold_seqs,obs_below_threshold_seqs)
 
     def test_pick_corr_contaminants(self):
 

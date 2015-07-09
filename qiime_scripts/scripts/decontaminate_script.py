@@ -328,6 +328,9 @@ def main():
     elif (blank_stats_removal or reinstatement):
         option_parser.error("Blank-based filtering requested but no blank"
                             "samples indicated in mapping file or ID file.")
+    else:
+        contamination_stats_header, contamination_stats_dict = \
+            get_contamination_stats(unique_seq_biom)
 
 
     seq_ids = unique_seq_biom.ids(axis='observation')
@@ -335,6 +338,20 @@ def main():
 
     # Do blank-based contaminant identification
 
+    if min_relabund_threshold:
+        output_dict['below_relabund_threshold'] = pick_min_relabund_threshold(
+                                                  contamination_stats_dict,
+                                                  contamination_stats_header,
+                                                  min_relabund)
+
+    if prescreen_libraries:
+        'prescreen_contaminants' = compare_blank_abundances(contamination_stats_dict, 
+                                contamination_stats_header,
+                                removal_stat_blank,
+                                removal_stat_sample,
+                                removal_differential,
+                                negate=False)
+        
 
     if blank_stats_removal:
         output_dict['abund_contaminants'] = compare_blank_abundances(contamination_stats_dict, 
@@ -343,8 +360,6 @@ def main():
                                 removal_stat_sample,
                                 removal_differential,
                                 negate=False)
-
-
 
         contaminant_types.append('abund_contaminants')
 
@@ -355,6 +370,7 @@ def main():
         output_dict['ref_contaminants'] = pick_ref_contaminants(seq_ids, contaminant_db_fp, input_fasta_fp, contaminant_similarity, output_dir)
 
         contaminant_types.append('ref_contaminants')
+
 
     # Do spearman correlation based contaminant identification
 

@@ -123,12 +123,13 @@ def mothur_counts_to_biom(mothur_fp):
 
     return(filter_biom)
 
-def get_contamination_stats(biom_file, blank_sample_ids=None, proportional=False):
+def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=None, proportional=False):
     if not proportional:
         biom_file = biom_file.norm()
 
     header = ['maxS','avgS']
 
+    # Calculate blank stats if blank sample names are provided
     if blank_sample_ids:
         blanks = True
 
@@ -140,11 +141,18 @@ def get_contamination_stats(biom_file, blank_sample_ids=None, proportional=False
         header.append('maxB')
         header.append('avgB')
     else:
+        # Otherwise, set the 'blanks' to an empty list
         blank_sample_ids = []
         blanks = False
 
-    sample_data = biom_file.filter(blank_sample_ids, axis='sample', 
-        invert=True, inplace=False).matrix_data
+    # If specific list of experimental sample IDs aren't provided, 
+    # assume everything not marked blank is an experimental sample
+
+    if not exp_sample_ids:
+        exp_sample_ids = set(biom_file.ids(axis='sample')) - set(blank_sample_ids)
+
+    sample_data = biom_file.filter(exp_sample_ids, axis='sample', 
+        invert=False, inplace=False).matrix_data
 
     maxS = sample_data.max(axis=1).todense().tolist()
     avgS = sample_data.mean(axis=1).tolist()
@@ -162,6 +170,18 @@ def get_contamination_stats(biom_file, blank_sample_ids=None, proportional=False
             i += 1
 
     return(header, stats_dict)
+
+def pick_min_relabund_threshold(stats_dict, stats_header, min_relabund, sample_stat='maxS'):
+
+    i_s = stats_header.index(sample_stat)
+
+    passed_otus = set()
+
+    for otu in stats_dict:
+        if(float(stats_dict[otu][i_s]) < float(min_relabund)):
+            passed_otus.add(otu)
+
+    return(passed_otus)
 
 def compare_blank_abundances(stats_dict, stats_header,
                             sample_stat, blank_stat, scalar=1, negate=False):
