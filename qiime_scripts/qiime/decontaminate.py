@@ -127,8 +127,8 @@ def mothur_counts_to_biom(mothur_fp):
 
 def prescreen_libraries(unique_seq_biom,
                         blank_sample_ids,
-                        removal_stat_blank, 
                         removal_stat_sample, 
+                        removal_stat_blank, 
                         removal_differential, 
                         prescreen_threshold):
 
@@ -257,16 +257,12 @@ def print_filtered_mothur_counts(mothur_counts_fp, output_counts_fp, filter_set)
     t = 0
 
     for line in open(mothur_counts_fp, 'U'):
-        # print header line
-        if t == 0:
-            t += 1
-            continue
-
         seq_identifier = line.strip().split('\t')[0]
 
         # only write this line if the otu has more than n sequences (so
         # greater than n tab-separated fields including the otu identifier)
-        if seq_identifier in filter_set:
+        # or if it's the header (first) line
+        if seq_identifier in filter_set or t == 0:
             output_counts_f.write(line)
         t += 1
 
@@ -313,7 +309,7 @@ def print_results_file(seq_ids,
                        stats_header=None,
                        stats_dict=None,
                        corr_data_dict=None):
-    
+
     output_f = open(output_fp, 'w')
 
     header = "SeqID"
@@ -341,11 +337,11 @@ def print_results_file(seq_ids,
         if stats_header:
             t = 0
             for x in stats_header:
-                outline += '\t{0}'.format(stats_dict[otu][t])
+                outline += '\t{0:.3f}'.format(stats_dict[otu][t])
                 t += 1
 
         if corr_data_dict:
-            outline += '\t{0}\t{1}'.format(
+            outline += '\t{0:.3f}\t{1:.3f}'.format(
                                            corr_data_dict[otu][0],
                                            corr_data_dict[otu][1])
 

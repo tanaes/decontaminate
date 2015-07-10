@@ -327,12 +327,10 @@ def main():
         if prescreen_threshold:
             low_contam_libraries = prescreen_libraries(unique_seq_biom,
                                                        blank_sample_ids,
-                                                       removal_stat_blank, 
                                                        removal_stat_sample, 
+                                                       removal_stat_blank, 
                                                        removal_differential, 
                                                        prescreen_threshold)
-
-            print(low_contam_libraries)
 
             contamination_stats_header, contamination_stats_dict = \
                 get_contamination_stats(unique_seq_biom,
@@ -359,16 +357,16 @@ def main():
         output_dict['below_relabund_threshold'] = pick_min_relabund_threshold(
                                                   contamination_stats_dict,
                                                   contamination_stats_header,
-                                                  min_relabund)
+                                                  min_relabund_threshold)
 
 
     if blank_stats_removal:
         output_dict['abund_contaminants'] = compare_blank_abundances(contamination_stats_dict, 
                                 contamination_stats_header,
-                                removal_stat_blank,
                                 removal_stat_sample,
+                                removal_stat_blank,
                                 removal_differential,
-                                negate=False)
+                                negate=True)
 
         contaminant_types.append('abund_contaminants')
 
@@ -398,6 +396,12 @@ def main():
     # Putative contaminants are those that have been identified by any method
 
     putative_contaminants = set.union(*map(set, [output_dict[x] for x in contaminant_types]))
+
+
+    # If considering low abundance sequences, remove those from consideration as potential contaminants 
+
+    if 'below_relabund_threshold' in output_dict:
+        putative_contaminants = putative_contaminants - set(output_dict['below_relabund_threshold'])
 
 
     # Pick abundance-criterion seqs to reinstate
@@ -436,6 +440,12 @@ def main():
 
     output_dict['ever_good_seqs'] = set(seq_ids) - putative_contaminants
 
+    # If considering low abundance sequences, remove those from consideration as potential contaminants 
+
+    if 'below_relabund_threshold' in output_dict:
+        output_dict['ever_good_seqs'] = output_dict['ever_good_seqs'] - set(output_dict['below_relabund_threshold'])
+
+
 
     # ...and those either never ID'd as contaminants or reinstated:
     if reinstatement:
@@ -470,7 +480,7 @@ def main():
                        os.path.join(output_dir,'contamination_summary.txt'),
                        contamination_stats_header,
                        contamination_stats_dict,
-                       corr_data_dict)
+                       corr_contaminant_dict)
 
 
 
