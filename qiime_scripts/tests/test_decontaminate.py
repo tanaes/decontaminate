@@ -182,6 +182,19 @@ class DecontaminationTests(TestCase):
         self.assertEqual(exp_counts_table,obs_counts_table)
 
 
+    def test_filter_contaminated_libraries(self):
+        """Test filtering process for heavily contaminated libraries"""
+
+        test_biom = self.test_biom
+        exp_filtered_biom = parse_table(test_biom_file_filt)
+
+        contaminant_otus = set(['otu3','contam1','contam2','contam4'])
+
+        obs_filtered_biom = filter_contaminated_libraries(test_biom, contaminant_otus, 0.8)
+
+        self.assertEqual(exp_filtered_biom, obs_filtered_biom)
+
+
     def test_prescreen_libraries(self):
         """Test pre-screening libraries for contamination"""
 
@@ -246,6 +259,7 @@ class DecontaminationTests(TestCase):
 
         self.assertEqual(exp_hits_100, obs_hits_100)
 
+
     def test_get_contamination_stats(self):
         """add_contamination_stats_to_biom: 
         """
@@ -305,8 +319,6 @@ class DecontaminationTests(TestCase):
         # Contamination stats dict is as expected
         assertDeepAlmostEqual(self, exp_contam_stats_dict_sample,
                               obs_contamination_stats_dict)
-        
-
 
 
     def test_compare_blank_abundances(self):
@@ -381,8 +393,9 @@ class DecontaminationTests(TestCase):
 
 
 test_biom_file = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.0.1-dev","date": "2014-09-14T17:26:13.141629","type": "OTU table","matrix_element_type": "float","shape": [8, 4],"data": [[0,0,1.0],[0,2,4.0],[0,3,2.0],[1,0,4.0],[1,1,1.0],[1,2,6.0],[1,3,1.0],[2,0,4.0],[2,1,3.0],[2,2,6.0],[3,2,3.0],[4,0,4.0],[4,1,2.0],[4,2,1.0],[5,0,4.0],[5,1,1.0],[5,2,3.0],[6,0,4.0],[6,2,3.0],[6,3,2.0],[7,0,3.0],[7,1,1.0]],"rows": [{"id": "otu1", "metadata": null},{"id": "otu2", "metadata": null},{"id": "otu3", "metadata": null},{"id": "otu4", "metadata": null},{"id": "contam1", "metadata": null},{"id": "contam2", "metadata": null},{"id": "contam3", "metadata": null},{"id": "contam4", "metadata": null}],"columns": [{"id": "Blank1", "metadata": null},{"id": "Blank2", "metadata": null},{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null}]}"""
+test_biom_file_filt = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.0.1-dev","date": "2015-07-13T11:35:24.327048","type": "OTU table","matrix_element_type": "float","shape": [4, 1],"data": [[0,0,2.0],[1,0,1.0],[3,0,2.0]],"rows": [{"id": "otu1", "metadata": null},{"id": "otu2", "metadata": null},{"id": "otu4", "metadata": null},{"id": "contam3", "metadata": null}],"columns": [{"id": "Sample2", "metadata": null}]}"""
 
-exp_mothur_counts_table = "Representative_Sequence\ftotal\tBlank1\tBlank2\tSample1\tSample2\notu1\t7\t1\t0\t4\t2\notu2\t12\t4\t1\t6\t1\notu3\t13\t4\t3\t6\t0\notu4\t3\t0\t0\t3\t0\ncontam1\t7\t4\t2\t1\t0\ncontam2\t8\t4\t1\t3\t0\ncontam3\t9\t4\t0\t3\t2\ncontam4\t4\t3\t1\t0\t0"
+exp_mothur_counts_table = "Representative_Sequence\ttotal\tBlank1\tBlank2\tSample1\tSample2\notu1\t7\t1\t0\t4\t2\notu2\t12\t4\t1\t6\t1\notu3\t13\t4\t3\t6\t0\notu4\t3\t0\t0\t3\t0\ncontam1\t7\t4\t2\t1\t0\ncontam2\t8\t4\t1\t3\t0\ncontam3\t9\t4\t0\t3\t2\ncontam4\t4\t3\t1\t0\t0\n"
 exp_contamination_header = ['maxS', 'avgS','maxB','avgB']
 exp_contamination_stats_dict = {'otu1': [4,3,1,0.5], 'otu2': [6,3.5,4,2.5], 'otu3': [6,3,4,3.5], 'otu4': [3,1.5,0,0], 'contam1': [1,0.5,4,3], 'contam2': [3,1.5,4,2.5], 'contam3': [3,2.5,4,2], 'contam4': [0,0,3,2]}
 exp_contam_stats_dict_noblanks = {'otu1': [4.00,1.75], 'otu2': [6.00,3.00], 'otu3': [6.00,3.25], 'otu4': [3.00,0.75], 'contam1': [4.00,1.75], 'contam2': [4.00,2.00], 'contam3': [4.00,2.25], 'contam4': [3.00,1.00]}

@@ -125,6 +125,25 @@ def mothur_counts_to_biom(mothur_fp):
     return(filter_biom)
 
 
+def biom_to_mothur_counts(biom_obj):
+
+    sample_ids = biom_obj.ids(axis='sample')
+    otu_ids = biom_obj.ids(axis='observation')
+    otu_totals = biom_obj.sum(axis='observation')
+
+    outstring = 'Representative_Sequence\ttotal\t' + '\t'.join(sample_ids) + '\n'
+
+    for otu in otu_ids:
+        otu_data = biom_obj.data(id = otu, axis = 'observation')
+        outstring += '{0}\t{1}\t{2}\n'.format(otu,
+                                              int(otu_data.sum()),
+                                              '\t'.join(str(x) for x in otu_data.astype('int')))
+
+    return(outstring)
+
+
+
+
 def prescreen_libraries(unique_seq_biom,
                         blank_sample_ids,
                         removal_stat_sample, 
@@ -237,6 +256,29 @@ def compare_blank_abundances(stats_dict, stats_header,
 
     # print passed_otus
     return(passed_otus)
+    
+
+def filter_contaminated_libraries(unique_seq_biom, contaminant_otus, contam_threshold):
+    # make relabund table
+    norm_biom = unique_seq_biom.norm(inplace = False)
+
+    # filter out sequences marked as contaminants
+    norm_biom.filter(lambda val, id_, metadata: id_ in contaminant_otus,
+                     axis='observation', invert=True, inplace=True)
+
+    # filter out samples above threshold
+    norm_biom.filter(lambda val, id_, metadata: sum(val) > contam_threshold,
+                          axis='sample', invert=False, inplace=True)
+
+    # filter contam sequences from original biom
+    filtered_biom = unique_seq_biom.filter(lambda val, id_, metadata: id_ in contaminant_otus,
+                     axis='observation', invert=True, inplace=False)
+
+    # filter samples that lost too much relative to starting from original biom
+    filtered_biom = filtered_biom.filter(lambda val, id_, metadata: id_ in norm_biom.ids(axis='sample'),
+                     axis='sample', invert=False, inplace=True)
+
+    return(filtered_biom)
 
 
 def print_filtered_otu_map(input_otu_map_fp, output_otu_map_fp, filter_set):
