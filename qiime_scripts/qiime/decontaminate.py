@@ -339,7 +339,7 @@ def print_filtered_mothur_counts(mothur_counts_fp, output_counts_fp, filter_set)
     return
 
 
-def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids, discarded_libs=[]):
+def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids, dropped_libs=[]):
 
     outline = 'Library\t'
 
@@ -347,8 +347,8 @@ def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids
 
     outline += '_otus\t'.join(per_library_stats_header)
 
-    if len(discarded_libs) > 0:
-        outline += 'library_discarded'
+    if len(dropped_libs) > 0:
+        outline += '\tlibrary_discarded'
         discard = True
     else:
         discard = False
@@ -367,10 +367,10 @@ def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids
             outline += '\t' + str(int(per_library_stats[category][1][t]))
 
         if discard:
-            if lib in discarded_libs:
-                outline += 'True'
+            if lib in dropped_libs:
+                outline += '\tTrue'
             else:
-                outline += 'False'
+                outline += '\tFalse'
 
         outline += '\n'
 

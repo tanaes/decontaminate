@@ -155,6 +155,14 @@ script_info['optional_options'] = [
                  help='minimum number of samples necessary for reinstatement'),
     make_option('--reinstatement_method', type="choice", choices=["union", "intersection"],
                  help='method to rectify reinstatement criteria'),
+    make_option('--drop_lib_threshold', type="float", 
+                 help='read loss threshold to drop libraries from output table'),
+    make_option('--write_filtered_output', action="store_true", 
+                 help='write an output table filtered of contaminants'),
+    make_option('--write_per_library_stats', action="store_true", 
+                 help='write a per-library decontamination summary'),
+    make_option('--write_per_seq_stats', action="store_true", 
+                 help='write a per-sequence decontamination summary'),
     make_option('--write_output_seq_lists', action="store_true",
                  help='write separate sequence name lists for each contaminant category')
 
@@ -188,6 +196,10 @@ def main():
     reinstatement_sample_number = opts.reinstatement_sample_number
     reinstatement_method = opts.reinstatement_method
     write_output_seq_lists = opts.write_output_seq_lists
+    write_filtered_output = opts.write_filtered_output
+    drop_lib_threshold = opts.drop_lib_threshold
+    write_per_seq_stats = opts.write_per_seq_stats
+    write_per_library_stats = opts.write_per_library_stats
 
     # Make unique seq OTU table (biom file)
 
@@ -447,11 +459,14 @@ def main():
     if 'below_relabund_threshold' in output_dict:
         output_dict['ever_good_seqs'] = output_dict['ever_good_seqs'] - set(output_dict['below_relabund_threshold'])
 
+    # Make set of good seqs for final filtering
+
+    final_good_seqs = output_dict['ever_good_seqs']
 
     # ...and those either never ID'd as contaminants or reinstated:
     if reinstatement:
         output_dict['all_good_seqs'] = set(output_dict['ever_good_seqs'] | output_dict['reinstated_seqs'])
-
+        final_good_seqs = output_dict['all_good_seqs']
         # ...and those who remain contaminants after reinstatement:
         output_dict['never_good_seqs'] = set(output_dict['putative_contaminants'] - output_dict['reinstated_seqs'])
 
@@ -473,9 +488,48 @@ def main():
     if write_output_seq_lists:
         print_filtered_output('seq_headers', seq_ids, output_dir, output_dict)
 
+
+    # filter final biom file to just good seqs
+
+    filtered_biom = unique_seq_biom.filter(lambda val, id_, metadata: id_ in final_good_seqs,
+                     axis='observation', invert=False, inplace=False)
+
+    # drop heavily contaminated libraries if requested
+
+    if drop_lib_threshold:
+        dropped_libs = unique_seq_biom.norm(inplace=False).filter(lambda val, id_, metadata: id_ in final_good_seqs,
+                 axis='observation', invert=False, inplace=False).filter(lambda val, id_, metadata: sum(val) >= drop_lib_threshold,
+                 axis='sample', invert=True, inplace=False).ids(axis='sample')
+        filtered_biom.filter(lambda val, id_, metadata: id_ in dropped_libs,
+                 axis='sample', invert=True, inplace=True)
+    else:
+        dropped_libs = []
+
+
     # print filtered biom/mothur_output if library filtering is requested
 
+    if write_filtered_output:
+
+        if mothur_output:
+            output_counts_string = biom_to_mothur_counts(filtered_biom)
+            with open(os.path.join(output_dir,'decontaminated_table.counts'), "w") as output_counts_file:
+                output_counts_file.write(output_counts_string)
+        else:
+            output_biom_string = filtered_biom.to_json('Filtered by decontaminate.py')
+            output_biom_string
+            with open(os.path.join(output_dir,'decontaminated_otu_table.biom'), "w") as output_biom_file:
+                output_biom_file.write(output_biom_string)
+
+
+
     # print per-library stats if requested
+
+    if write_per_library_stats:
+        per_library_stats, per_library_stats_header = calc_per_library_decontam_stats(unique_seq_biom, output_dict)
+        library_stats_string = print_per_library_stats(per_library_stats, per_library_stats_header, unique_seq_biom.ids(axis='sample'), dropped_libs=dropped_libs)
+        
+        with open(os.path.join(output_dir,'decontamination_per_library_stats.txt'), "w") as output_stats_file:
+            output_stats_file.write(library_stats_string)
 
 
     # print otu by disposition file if requested
@@ -483,8 +537,8 @@ def main():
 
 
     # print log file / per-seq info
-
-    print_results_file(seq_ids,
+    if write_per_seq_stats:
+        print_results_file(seq_ids,
                        output_dict,
                        os.path.join(output_dir,'contamination_summary.txt'),
                        contamination_stats_header,
