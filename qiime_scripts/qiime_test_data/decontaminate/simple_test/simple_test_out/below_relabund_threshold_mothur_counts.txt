@@ -1,0 +1,5 @@
+Representative_Sequence	total	Blank1	Blank2	Sample1	Sample2
+otu4	3	0	0	3	0
+contam1	7	4	2	1	0
+contam2	8	4	1	3	0
+contam4	4	3	1	0	0

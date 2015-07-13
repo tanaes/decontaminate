@@ -1,0 +1,8 @@
+otu1	ever_good_seqs
+otu2	ever_good_seqs
+otu3	putative_contaminants
+otu4	below_relabund_threshold
+contam1	below_relabund_threshold
+contam2	below_relabund_threshold
+contam3	ever_good_seqs
+contam4	below_relabund_threshold

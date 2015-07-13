@@ -1,0 +1,5 @@
+Library	starting_reads	below_relabund_threshold_reads	putative_contaminants_reads	ever_good_seqsstarting_otus	below_relabund_threshold_otus	putative_contaminants_otus	ever_good_seqs	library_discarded
+Blank1	24	11	4	9	7	3	1	3	True
+Blank2	8	4	3	1	5	3	1	1	True
+Sample1	26	7	6	13	7	3	1	3	True
+Sample2	5	0	0	5	3	0	0	3	False

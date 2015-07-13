@@ -1,0 +1,4 @@
+otu3
+contam1
+contam2
+contam4
