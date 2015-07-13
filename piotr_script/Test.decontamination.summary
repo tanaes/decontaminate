@@ -1,0 +1,7 @@
+Library status	Library name	no_reads @ start	no_reads after steps (a)+(b)	no_reads @ end	no_unique_genotypes @ start	no_unique_genotypes after steps (a)+(b)	no_unique_genotypes after steps (a)+(b) @ end
+BLANK_REMOVED	Blank1	287	7.0	0	11	4	0
+BLANK_REMOVED	Blank2	2365	49.0	0	14	7	0
+LIBRARY_RETAINED	Exp1	1339	1264.0	1263	12	7	7
+LIBRARY_RETAINED	Exp2	2097	1328.0	1328	15	9	9
+LIBRARY_RETAINED	Exp3	3570	3488.0	3485	12	7	4
+LIBRARY_RETAINED	Exp4	1472	1349.0	1348	13	7	7

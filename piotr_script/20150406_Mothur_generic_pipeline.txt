@@ -1,0 +1,81 @@
+### Set working directory
+set.dir(input=your_path, output=your_path)
+
+# Assemble forward and reverse reads
+make.contigs(file=Your_file.txt, oligos=Your_mapping.oligos, allfiles, processors=2)
+
+# filter sequences based on length, ambiguous base and homopolymer
+# The numbers at screen.seqs() step make sense when processing data sequenced following EMP protocol; otherwise, you'll need to change the values.
+# Run summary.seqs(fasta=Your_contigs.fasta) to see the range of contig sizes.
+screen.seqs(fasta=Your_contigs.fasta,group=Your.groups,maxlength=255,minlength=251,maxambig=0,maxhomop=10,processors=16)
+
+# Pick unique sequences
+unique.seqs(fasta=Your.fasta)
+
+# Generate count_table = a unique sequence table
+count.seqs(name=Your.names, group=Your.groups)
+
+# (optional) Remove rare unique sequences, those represented by less than the specified number of reads (perhaps a thousandth of a smallest library)
+# They will be removed at the decontamination step anyway - and removing them here already could considerably speed up decontamination.
+# I'll need to test this more comprehensively, though!
+split.abund(fasta=frogs.unique.fasta, count=frogs.count_table, cutoff=1)
+
+####### Run Piotr's decontamination script with default parameters. The command assumes that the script is in your path...
+system(decontaminate.py Your.count_table Your_Blank_Sample_Names.txt 10 0.001 0.3)
+
+# Getting accession numbers of sequences retained in count_table after contaminant removal, extracting these sequences from fasta file
+list.seqs(count=Your.decontaminated.count_table)
+get.seqs(accnos=current, fasta=Your.unique.fasta)
+ 
+# Aligning sequences against a Silva reference, removing unaligned etc. sequences, end then deleting gaps etc.
+# The numbers at screen.seqs() step make sense when processing data sequenced following EMP protocol; otherwise, you'll need to change the values.
+# Run summary.seqs(fasta=Your.unique.pick.fasta) to see where most sequences start and end and how long they are.
+align.seqs(fasta=Your.unique.pick.fasta, reference=/path/silva.bacteria.fasta, processors=2)
+screen.seqs(fasta=Your.unique.pick.align, count=Your.decontaminated.count_table, start=13862, end=23444, minlength=251)
+filter.seqs(fasta=Your.unique.pick.good.align, vertical=T, trump=.)
+
+# Chimera screening using uchime, and removing the identified chimeras from fasta and count files
+chimera.uchime(fasta=Your.unique.pick.good.filter.fasta, reference=self, count=Your.decontaminated.good.count_table, dereplicate=f, processors=2, minh=1.5)
+remove.seqs(accnos=current, fasta=Your.unique.pick.good.filter.fasta, count=Your.decontaminated.good.count_table)
+
+# Classify sequences, remove unclassified and non-bacterial sequences from the dataset
+classify.seqs(fasta=Your.unique.pick.good.filter.pick.fasta,count=Your.decontaminated.good.pick.count_table,reference=/path_to_your_reference_files/trainset10_082014.rdp.fasta, taxonomy=/Apath_to_your_reference_files/trainset10_082014.rdp.tax,cutoff=80,processors=2)
+remove.lineage(fasta=Your.unique.pick.good.filter.pick.fasta, count=Pat_frog.abund.decontaminated.good.pick.count_table, taxonomy=current, taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)
+
+# Rename final files; there is a good chance that your names won't be exactly the 
+system(mv Your.unique.pick.good.filter.pick.pick.fasta Your_final.fasta)
+system(mv Your.decontaminated.good.pick.pick.count_table Your_final.count_table)
+system(mv Your.unique.pick.good.filter.pick.rdp.wang.pick.taxonomy Your_final.taxonomy)
+
+# Calculate distance matrix
+dist.seqs(fasta=Your_final.fasta, processors=2, cutoff=0.20)
+
+# OTU picking!
+cluster(column=Your_final.dist, count=Pat_frog_final.count_table, cutoff=0.20, method=average)
+
+# Classifying sequences - OTU picking at 97%, 94% and 90% levels
+bin.seqs(list=current, fasta=Pat_frog_final.fasta, label=0.03)
+bin.seqs(list=current, fasta=Pat_frog_final.fasta, label=0.06)
+bin.seqs(list=current, fasta=Pat_frog_final.fasta, label=0.10)
+
+# Constructing OTU table at 97%, 94% and 90% levels, changing file names so that they won't get overwritten by a consecutive step
+make.shared(list=current,count=Your_final.count_table,label=0.03)
+system(mv Your_final.an.unique_list.shared Your_final.an.unique_list.0.03.shared)
+make.shared(list=current,count=Your_final.count_table,label=0.06)
+system(mv Your_final.an.unique_list.shared Your_final.an.unique_list.0.06.shared)
+make.shared(list=current,count=Your_final.count_table,label=0.10)
+system(mv Your_final.an.unique_list.shared Your_final.an.unique_list.0.10.shared)
+
+# Assigning consensus taxonomic IDs for OTUs
+classify.otu(list=current,count=Your_final.count_table,taxonomy=Your_final.taxonomy, label=0.03)
+classify.otu(list=current,count=Your_final.count_table,taxonomy=Your_final.taxonomy, label=0.06)
+classify.otu(list=current,count=Your_final.count_table,taxonomy=Your_final.taxonomy, label=0.10)
+
+### If you've gotten to this point without errors, congratulations! Analysis is complete.
+### Otherwise, I hope that debugging the script won't be too hard...
+
+### Now, in Excel, combine information from the resulting files.
+### Your_final.an.unique_list.0.03.shared is a 97% OTU table which you can use for barplots etc.
+### Your_final.an.unique_list.0.03.cons.taxonomy is a list of taxonomic assignemnts of 97% OTUs
+### Your_final.an.unique_list.0.03.fasta is a list of all unique sequences with info about 97% OTU that they got classified to.
+### The same info is available for 94% and 90% OTUs. This can be handy sometimes.
