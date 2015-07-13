@@ -195,6 +195,27 @@ class DecontaminationTests(TestCase):
         self.assertEqual(exp_filtered_biom, obs_filtered_biom)
 
 
+    def test_calc_per_library_decontam_stats(self):
+
+        test_biom = self.test_biom
+
+        output_dict = {'below_relabund_threshold': set(['otu4','contam4']),
+                       'putative_contaminants': set(['contam1','contam2']),
+                       'ever_good_seqs': set(['otu1','otu2','otu3','contam3'])}
+
+        exp_results_dict = {'starting': ([24.0, 8.0, 26.0, 5.0], [7.0, 5.0, 7.0, 3.0]),
+                            'below_relabund_threshold': ([3.0, 1.0, 3.0, 0.0], [1.0, 1.0, 1.0, 0.0]),
+                            'putative_contaminants': ([8.0, 3.0, 4.0, 0.0], [2.0, 2.0, 2.0, 0.0]),
+                            'ever_good_seqs': ([13.0, 4.0, 19.0, 5.0], [4.0, 2.0, 4.0, 3.0])}
+
+        exp_results_header = ['starting','below_relabund_threshold', 'putative_contaminants', 'ever_good_seqs']
+
+        obs_results_dict, obs_results_header = calc_per_library_decontam_stats(test_biom, output_dict)
+
+        assertDeepAlmostEqual(self, exp_results_dict, obs_results_dict)
+        self.assertEqual(exp_results_header, obs_results_header)
+
+
     def test_prescreen_libraries(self):
         """Test pre-screening libraries for contamination"""
 

@@ -256,7 +256,34 @@ def compare_blank_abundances(stats_dict, stats_header,
 
     # print passed_otus
     return(passed_otus)
-    
+
+
+def calc_per_category_decontam_stats(biom_obj, filter_otus):
+    reads = biom_obj.filter(lambda val, id_, metadata: id_ in filter_otus,
+                     axis='observation', invert=False, inplace=False).sum(axis = 'sample')
+    otus = biom_obj.pa(inplace = False).filter(lambda val, id_, metadata: id_ in filter_otus,
+                     axis='observation', invert=False, inplace=False).sum(axis = 'sample')
+
+    return(reads.tolist(),otus.tolist())
+
+
+def calc_per_library_decontam_stats(start_biom, output_dict):
+    # calculate starting number of sequences and unique sequences per library
+
+    steps = ['below_relabund_threshold','putative_contaminants','ever_good_seqs','reinstated_seqs','all_good_seqs']
+
+    results_dict = {}
+
+    results_dict['starting'] = calc_per_category_decontam_stats(start_biom, start_biom.ids(axis='observation'))
+    results_header = ['starting']
+
+    for step in steps:
+        if step in output_dict:
+            results_dict[step] = calc_per_category_decontam_stats(start_biom, output_dict[step])
+            results_header.append(step)
+
+    return(results_dict, results_header)
+
 
 def filter_contaminated_libraries(unique_seq_biom, contaminant_otus, contam_threshold):
     # make relabund table
@@ -310,6 +337,46 @@ def print_filtered_mothur_counts(mothur_counts_fp, output_counts_fp, filter_set)
 
     output_counts_f.close()
     return
+
+
+def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids, discarded_libs=[]):
+
+    outline = 'Library\t'
+
+    outline += '_reads\t'.join(per_library_stats_header)
+
+    outline += '_otus\t'.join(per_library_stats_header)
+
+    if len(discarded_libs) > 0:
+        outline += 'library_discarded'
+        discard = True
+    else:
+        discard = False
+
+    outline += '\n'
+
+    t = 0
+    for lib in lib_ids:
+
+
+        outline += lib
+
+        for category in per_library_stats_header:
+            outline += '\t' + str(int(per_library_stats[category][0][t]))
+        for category in per_library_stats_header:
+            outline += '\t' + str(int(per_library_stats[category][1][t]))
+
+        if discard:
+            if lib in discarded_libs:
+                outline += 'True'
+            else:
+                outline += 'False'
+
+        outline += '\n'
+
+        t += 1
+
+    return(outline)
 
 
 def print_filtered_seq_headers(seq_headers, output_headers_fp, filter_set):

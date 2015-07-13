@@ -261,6 +261,7 @@ def main():
 
     # If correlation-based filtering requested, make sure correlate data 
     # are specified
+
     if max_correlation and not correlate_header:
         option_parser.error("If specifying maximum Spearman correlation, must "
                            "also provide map column header for correlate data")
@@ -268,6 +269,7 @@ def main():
 
     # If sequence reinstatement is requested, make sure all necessary options
     # are specified
+
     reinstatement_options_counter = 0
     if reinstatement_stat_blank:
         reinstatement_options_counter += 1
@@ -395,19 +397,19 @@ def main():
 
     # Putative contaminants are those that have been identified by any method
 
-    putative_contaminants = set.union(*map(set, [output_dict[x] for x in contaminant_types]))
+    output_dict['putative_contaminants'] = set.union(*map(set, [output_dict[x] for x in contaminant_types]))
 
 
     # If considering low abundance sequences, remove those from consideration as potential contaminants 
 
     if 'below_relabund_threshold' in output_dict:
-        putative_contaminants = putative_contaminants - set(output_dict['below_relabund_threshold'])
+        output_dict['putative_contaminants'] = output_dict['putative_contaminants'] - set(output_dict['below_relabund_threshold'])
 
 
     # Pick abundance-criterion seqs to reinstate
 
     if (reinstatement_stat_blank and reinstatement_stat_sample and reinstatement_differential):
-        output_dict['abund_reinstated_seqs'] = reinstate_abund_seqs(putative_contaminants, 
+        output_dict['abund_reinstated_seqs'] = reinstate_abund_seqs(output_dict['putative_contaminants'], 
                      contamination_stats_dict, 
                      contamination_stats_header,
                      reinstatement_stat_sample,
@@ -420,7 +422,7 @@ def main():
     # Pick incidence-criterion seqs to reinstate
     if reinstatement_sample_number:
         output_dict['incidence_reinstated_seqs'] = reinstate_incidence_seqs(
-                     putative_contaminants,
+                     output_dict['putative_contaminants'],
                      unique_seq_biom,
                      blank_sample_ids,
                      reinstatement_sample_number)
@@ -438,7 +440,7 @@ def main():
 
     # make sets for sequence _never_ identified as contaminants:
 
-    output_dict['ever_good_seqs'] = set(seq_ids) - putative_contaminants
+    output_dict['ever_good_seqs'] = set(seq_ids) - output_dict['putative_contaminants']
 
     # If considering low abundance sequences, remove those from consideration as potential contaminants 
 
@@ -446,13 +448,12 @@ def main():
         output_dict['ever_good_seqs'] = output_dict['ever_good_seqs'] - set(output_dict['below_relabund_threshold'])
 
 
-
     # ...and those either never ID'd as contaminants or reinstated:
     if reinstatement:
         output_dict['all_good_seqs'] = set(output_dict['ever_good_seqs'] | output_dict['reinstated_seqs'])
 
         # ...and those who remain contaminants after reinstatement:
-        output_dict['never_good_seqs'] = set(putative_contaminants - output_dict['reinstated_seqs'])
+        output_dict['never_good_seqs'] = set(output_dict['putative_contaminants'] - output_dict['reinstated_seqs'])
 
 
     # print filtered OTU maps if given a QIIME OTU map input
@@ -471,6 +472,14 @@ def main():
 
     if write_output_seq_lists:
         print_filtered_output('seq_headers', seq_ids, output_dir, output_dict)
+
+    # print filtered biom/mothur_output if library filtering is requested
+
+    # print per-library stats if requested
+
+
+    # print otu by disposition file if requested
+
 
 
     # print log file / per-seq info
