@@ -379,6 +379,34 @@ def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids
     return(outline)
 
 
+def print_otu_disposition(input_seqs, output_dict, hierarchy=[]):
+    outline = ''
+
+    if hierarchy == []:
+        hierarchy = ['below_relabund_threshold', 'putative_contaminants','reinstated_seqs','ever_good_seqs']
+
+    # Subset hierarchy to levels also in output dict:
+
+    hierarchy = [x for x in hierarchy if x in output_dict]
+
+    # Check that the levels of the hierarchy are non-overlapping:
+
+    for x in range(len(hierarchy) - 1):
+        for y in range(x + 1,len(hierarchy)):
+            if not output_dict[hierarchy[x]].isdisjoint(output_dict[hierarchy[y]]):
+                print('warning: non-disjoint sets in the disposition hierarchy')
+
+    seqs_left = set(input_seqs)
+
+    for seq in input_seqs:
+        for level in hierarchy:
+            if seq in output_dict[level]:
+                outline += '{0}\t{1}\n'.format(seq,level)
+                break
+
+    return(outline)
+
+
 def print_filtered_seq_headers(seq_headers, output_headers_fp, filter_set):
 
     output_headers_f = open(output_headers_fp, 'w')

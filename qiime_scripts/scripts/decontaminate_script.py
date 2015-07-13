@@ -163,6 +163,8 @@ script_info['optional_options'] = [
                  help='write a per-library decontamination summary'),
     make_option('--write_per_seq_stats', action="store_true", 
                  help='write a per-sequence decontamination summary'),
+    make_option('--write_per_seq_disposition', action="store_true", 
+                 help='write a per-sequence disposition file'),
     make_option('--write_output_seq_lists', action="store_true",
                  help='write separate sequence name lists for each contaminant category')
 
@@ -200,6 +202,7 @@ def main():
     drop_lib_threshold = opts.drop_lib_threshold
     write_per_seq_stats = opts.write_per_seq_stats
     write_per_library_stats = opts.write_per_library_stats
+    write_per_seq_disposition = opts.write_per_seq_disposition
 
     # Make unique seq OTU table (biom file)
 
@@ -534,6 +537,11 @@ def main():
 
     # print otu by disposition file if requested
 
+    if write_per_seq_disposition:
+        per_seq_disposition = print_otu_disposition(seq_ids, output_dict)
+
+        with open(os.path.join(output_dir,'decontamination_per_otu_disposition.txt'), "w") as output_stats_file:
+            output_stats_file.write(per_seq_disposition)
 
 
     # print log file / per-seq info

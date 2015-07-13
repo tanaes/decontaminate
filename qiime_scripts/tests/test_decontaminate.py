@@ -195,6 +195,21 @@ class DecontaminationTests(TestCase):
         self.assertEqual(exp_filtered_biom, obs_filtered_biom)
 
 
+    def test_print_otu_disposition(self):
+
+        output_dict = {'below_relabund_threshold': set(['otu4','contam4']),
+                       'putative_contaminants': set(['contam1','contam2']),
+                       'ever_good_seqs': set(['otu1','otu2','otu3','contam3'])}
+
+        input_seqs = ['otu1','otu2','otu3','otu4','contam1','contam2','contam3','contam4']
+
+        exp_output_string = 'otu1\tever_good_seqs\notu2\tever_good_seqs\notu3\tever_good_seqs\notu4\tbelow_relabund_threshold\ncontam1\tputative_contaminants\ncontam2\tputative_contaminants\ncontam3\tever_good_seqs\ncontam4\tbelow_relabund_threshold\n'
+
+        obs_output_string = print_otu_disposition(input_seqs, output_dict)
+
+        self.assertEqual(exp_output_string,obs_output_string)
+
+
     def test_calc_per_library_decontam_stats(self):
 
         test_biom = self.test_biom
