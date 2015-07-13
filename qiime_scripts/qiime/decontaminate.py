@@ -343,9 +343,9 @@ def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids
 
     outline = 'Library\t'
 
-    outline += '_reads\t'.join(per_library_stats_header)
+    outline += '_reads\t'.join(per_library_stats_header) + '_reads\t'
 
-    outline += '_otus\t'.join(per_library_stats_header)
+    outline += '_otus\t'.join(per_library_stats_header) + '_otus'
 
     if len(dropped_libs) > 0:
         outline += '\tlibrary_discarded'
@@ -363,6 +363,7 @@ def print_per_library_stats(per_library_stats, per_library_stats_header, lib_ids
 
         for category in per_library_stats_header:
             outline += '\t' + str(int(per_library_stats[category][0][t]))
+
         for category in per_library_stats_header:
             outline += '\t' + str(int(per_library_stats[category][1][t]))
 

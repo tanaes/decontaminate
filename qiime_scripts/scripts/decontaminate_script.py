@@ -408,6 +408,8 @@ def main():
                                                    max_correlation)
 
         contaminant_types.append('corr_contaminants')
+    else:
+        corr_contaminant_dict = None
 
 
     # Putative contaminants are those that have been identified by any method
