@@ -29,7 +29,7 @@ blank_category='Blank:1'
 
 # Filter with ref and reinstatement
 
-python decontaminate_unitary.py \
+python ./qiime_scripts/scripts/decontaminate_script.py \
 --mothur_counts_fp ${counts_fp} \
 -o ${out_dir} \
 -m ${mapping_fp} \

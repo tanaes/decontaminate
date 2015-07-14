@@ -9,7 +9,7 @@ __version__ = "1.9.1"
 __maintainer__ = "Jon Sanders"
 __email__ = "jonsan@gmail.com"
 
-from biom import load_table
+from biom import load_table, parse_table
 from bfillings.uclust import get_clusters_from_fasta_filepath
 from bfillings.usearch import usearch_qf
 from scipy.stats import spearmanr
@@ -35,7 +35,7 @@ def pick_ref_contaminants(queries, ref_db_fp, input_fasta_fp, contaminant_simila
         suppress_new_clusters=True,
         return_cluster_maps=True,
         stable_sort=False,
-        save_uc_files=True,
+        save_uc_files=False,
         HALT_EXEC=False)
 
     # Pick seqs that fail the similarity to contaminants rule
@@ -115,9 +115,9 @@ def reinstate_incidence_seqs(putative_contaminants,
 
     return(incidence_reinstated_seqs)
 
-def mothur_counts_to_biom(mothur_fp):
+def mothur_counts_to_biom(mothur_f):
 
-    mothur_biom = load_table(mothur_fp)
+    mothur_biom = parse_table(mothur_f)
     mothur_biom.type = u'OTU table'
     filter_biom = mothur_biom.filter(
         lambda val, id_, metadata: id_ in 'total', invert=True)

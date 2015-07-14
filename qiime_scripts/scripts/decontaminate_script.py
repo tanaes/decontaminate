@@ -230,7 +230,7 @@ def main():
 
     if mothur_counts_fp:
         input_file_counter += 1
-        unique_seq_biom = mothur_counts_to_biom(mothur_counts_fp)
+        unique_seq_biom = mothur_counts_to_biom(open(mothur_counts_fp,'Ur'))
         mothur_output = True
         print "mothur input"
 
@@ -272,15 +272,29 @@ def main():
     if contaminant_db_fp and not input_fasta_fp:
         option_parser.error("If specifying ref-based contaminant ID, must "
                             "also specify path to input sequence fasta")
+    elif contaminant_db_fp and input_fasta_fp:
+        ref_removal = True
+    else:
+        ref_removal = False
 
 
     # If correlation-based filtering requested, make sure correlate data 
     # are specified
 
-    if max_correlation and not correlate_header:
+    if max_correlation and not (correlate_header and mapping_fp):
         option_parser.error("If specifying maximum Spearman correlation, must "
                            "also provide map column header for correlate data")
+    elif max_correlation and correlate_header and mapping_fp:
+        corr_removal = True
+    else:
+        corr_removal = False
 
+
+    # Make sure at least one contaminant filtering method is supplied:
+
+    if not (blank_stats_removal or ref_removal or corr_removal):
+        option_parser.error("Must supply at least one valid contamination "
+                            "identification method")
 
     # If sequence reinstatement is requested, make sure all necessary options
     # are specified
