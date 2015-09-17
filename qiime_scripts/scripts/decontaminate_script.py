@@ -244,6 +244,11 @@ def main():
         option_parser.error("must provide ONLY ONE of an OTU table biom file or"
                             "mothur counts table")
 
+    # Get rid of OTUs with no observations, if present
+    unique_seq_biom.filter(
+            lambda val, id_, metadata: val.sum() <= 0,
+            axis='observation', invert=True, inplace=True)
+
     # Check to make sure that if blank-based contamination filtering requested,
     # all necessary options are specified:
 
