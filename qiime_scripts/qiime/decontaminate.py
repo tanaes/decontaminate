@@ -477,7 +477,7 @@ def print_results_file(seq_ids,
         if stats_header:
             t = 0
             for x in stats_header:
-                outline += '\t{0:.3f}'.format(stats_dict[otu][t])
+                outline += '\t{0:.10f}'.format(stats_dict[otu][t])
                 t += 1
 
         if corr_data_dict:
