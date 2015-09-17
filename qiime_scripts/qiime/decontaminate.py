@@ -188,6 +188,8 @@ def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=[],
     if blank_sample_ids:
         blanks = True
 
+        blank_sample_ids = set(blank_sample_ids) & set(biom_file.ids(axis='sample'))
+
         blank_data = biom_file.filter(blank_sample_ids, axis='sample', 
                                       invert=False, inplace=False).matrix_data
         maxB = blank_data.max(axis=1).todense().tolist()
