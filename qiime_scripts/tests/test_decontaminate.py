@@ -75,13 +75,13 @@ class DecontaminationTests(TestCase):
 
     def test_pick_min_relabund_threshold(self):
 
-        contamination_header = exp_contamination_header
+        contamination_header = exp_contam_header_q50
 
-        contamination_stats_dict = exp_contamination_stats_dict_prop
+        contamination_stats_dict = exp_contam_stats_dict_prop_q50
 
         exp_below_threshold_seqs = set(['contam1','contam4'])
 
-        obs_below_threshold_seqs = pick_min_relabund_threshold(contamination_stats_dict, exp_contamination_header, 0.1)
+        obs_below_threshold_seqs = pick_min_relabund_threshold(contamination_stats_dict, contamination_header, 0.1)
 
         self.assertEqual(exp_below_threshold_seqs,obs_below_threshold_seqs)
 
@@ -114,9 +114,9 @@ class DecontaminationTests(TestCase):
 
         putative_contaminants = set(['otu1','otu2','otu3','contam1','contam2','contam3','contam4'])
 
-        contamination_stats_dict = exp_contamination_stats_dict
+        contamination_stats_dict = exp_contam_stats_dict_q50
 
-        contamination_stats_header = exp_contamination_header
+        contamination_stats_header = exp_contam_header_q50
 
 
         exp_abund_reinstated_seqs_max = set(['otu1','otu2','otu3'])
@@ -238,28 +238,33 @@ class DecontaminationTests(TestCase):
 
         unique_seq_biom = self.test_biom
 
-        exp_exclude_libs = set(['Sample2'])
+        exp_include_libs = set(['Sample2'])
 
-        obs_exclude_libs = prescreen_libraries(unique_seq_biom,
-                                               blank_sample_ids = ['Blank1','Blank2'],
+        contamination_stats_header = exp_contam_header_q50
+        contamination_stats_dict = exp_contam_stats_dict_prop_q50
+
+        obs_include_libs = prescreen_libraries(unique_seq_biom,
+                                               contamination_stats_header,
+                                               contamination_stats_dict,
                                                removal_stat_sample = 'maxS',
                                                removal_stat_blank = 'maxB',
                                                removal_differential = 1,
                                                prescreen_threshold = 0.65)
 
-        self.assertEqual(exp_exclude_libs, set(obs_exclude_libs))
+        self.assertEqual(exp_include_libs, set(obs_include_libs))
 
 
-        exp_exclude_libs = set(['Sample1', 'Sample2'])
+        exp_include_libs = set(['Sample1', 'Sample2'])
 
-        obs_exclude_libs = prescreen_libraries(unique_seq_biom,
-                                               blank_sample_ids = ['Blank1','Blank2'],
+        obs_include_libs = prescreen_libraries(unique_seq_biom,
+                                               contamination_stats_header,
+                                               contamination_stats_dict,
                                                removal_stat_sample = 'maxS',
                                                removal_stat_blank = 'maxB',
                                                removal_differential = 1,
                                                prescreen_threshold = 0.5)
 
-        self.assertEqual(exp_exclude_libs, set(obs_exclude_libs))
+        self.assertEqual(exp_include_libs, set(obs_include_libs))
 
 
     def test_pick_ref_contaminants(self):
@@ -337,11 +342,30 @@ class DecontaminationTests(TestCase):
                                           proportional=True)
 
         # Header is as expected
-        self.assertItemsEqual(exp_contamination_header_q50,
+        self.assertItemsEqual(exp_contam_header_q50,
                               obs_contamination_header)
 
         # Contamination stats dict is as expected
-        self.assertDictEqual(exp_contamination_stats_dict_q50,
+        self.assertDictEqual(exp_contam_stats_dict_q50,
+                              obs_contamination_stats_dict)
+        
+
+        # test median interpolation
+        (obs_contamination_header, obs_contamination_stats_dict) = \
+                  get_contamination_stats(test_biom,
+                                          qS=75, 
+                                          qB=75, 
+                                          interpolation='linear',
+                                          blank_sample_ids=blank_sample_ids,
+                                          proportional=True)
+
+
+        # Header is as expected
+        self.assertItemsEqual(exp_contam_header_q75,
+                              obs_contamination_header)
+
+        # Contamination stats dict is as expected
+        self.assertDictEqual(exp_contam_stats_dict_q75,
                               obs_contamination_stats_dict)
         
 
@@ -356,7 +380,7 @@ class DecontaminationTests(TestCase):
                                           proportional=False)
 
         # Header is as expected
-        self.assertItemsEqual(exp_contamination_header_q50,
+        self.assertItemsEqual(exp_contam_header_q50,
                               obs_contamination_header)
 
         # Contamination stats dict is as expected
@@ -394,7 +418,7 @@ class DecontaminationTests(TestCase):
                                           proportional=True)
 
         # Header is as expected
-        self.assertItemsEqual(exp_contamination_header_q50,
+        self.assertItemsEqual(exp_contam_header_q50,
                               obs_contamination_header)
 
         # Contamination stats dict is as expected
@@ -407,9 +431,9 @@ class DecontaminationTests(TestCase):
         abundance threshold for samples vs blank abundances.
         """
 
-        contamination_stats_dict = exp_contamination_stats_dict
+        contamination_stats_dict = exp_contam_stats_dict_q75
 
-        contamination_header = exp_contamination_header
+        contamination_header = exp_contam_header_q75
 
         # test for maxS > maxB
         passed_seqs = compare_blank_abundances(contamination_stats_dict,
@@ -473,33 +497,33 @@ class DecontaminationTests(TestCase):
         self.assertItemsEqual(['otu1','otu4'],passed_seqs)
 
 
+        # test for q75S > q75B
+        passed_seqs = compare_blank_abundances(contamination_stats_dict,
+                                 contamination_header,
+                                 sample_stat = 'q75S',
+                                 blank_stat = 'q75B',
+                                 scalar = 1,
+                                 negate = False)
+        
+        self.assertItemsEqual(['otu1','otu2','otu3','otu4'],passed_seqs)
+
+       
+
+
 test_biom_file = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.0.1-dev","date": "2014-09-14T17:26:13.141629","type": "OTU table","matrix_element_type": "float","shape": [8, 4],"data": [[0,0,1.0],[0,2,4.0],[0,3,2.0],[1,0,4.0],[1,1,1.0],[1,2,6.0],[1,3,1.0],[2,0,4.0],[2,1,3.0],[2,2,6.0],[3,2,3.0],[4,0,4.0],[4,1,2.0],[4,2,1.0],[5,0,4.0],[5,1,1.0],[5,2,3.0],[6,0,4.0],[6,2,3.0],[6,3,2.0],[7,0,3.0],[7,1,1.0]],"rows": [{"id": "otu1", "metadata": null},{"id": "otu2", "metadata": null},{"id": "otu3", "metadata": null},{"id": "otu4", "metadata": null},{"id": "contam1", "metadata": null},{"id": "contam2", "metadata": null},{"id": "contam3", "metadata": null},{"id": "contam4", "metadata": null}],"columns": [{"id": "Blank1", "metadata": null},{"id": "Blank2", "metadata": null},{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null}]}"""
 test_biom_file_filt = """{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_by": "BIOM-Format 2.0.1-dev","date": "2015-07-13T11:35:24.327048","type": "OTU table","matrix_element_type": "float","shape": [4, 1],"data": [[0,0,2.0],[1,0,1.0],[3,0,2.0]],"rows": [{"id": "otu1", "metadata": null},{"id": "otu2", "metadata": null},{"id": "otu4", "metadata": null},{"id": "contam3", "metadata": null}],"columns": [{"id": "Sample2", "metadata": null}]}"""
 
 
 test_mothur_counts_table = "Representative_Sequence\ttotal\tBlank1\tBlank2\tSample1\tSample2\notu1\t7\t1\t0\t4\t2\notu2\t12\t4\t1\t6\t1\notu3\t13\t4\t3\t6\t0\notu4\t3\t0\t0\t3\t0\ncontam1\t7\t4\t2\t1\t0\ncontam2\t8\t4\t1\t3\t0\ncontam3\t9\t4\t0\t3\t2\ncontam4\t4\t3\t1\t0\t0\n"
-exp_contamination_header = ['maxS', 'avgS', 'maxB','avgB']
-exp_contamination_stats_dict = {'otu1': [4,3,1,0.5], 'otu2': [6,3.5,4,2.5], 'otu3': [6,3,4,3.5], 'otu4': [3,1.5,0,0], 'contam1': [1,0.5,4,3], 'contam2': [3,1.5,4,2.5], 'contam3': [3,2.5,4,2], 'contam4': [0,0,3,2]}
 
-
-exp_contamination_header_q50 = ['maxS', 'avgS', 'q50S', 'maxB', 'avgB', 'q50B']
-
-exp_contamination_stats_dict_q50 = {'otu1': [4,3,3,1,0.5,0.5], 'otu2': [6,3.5,3.5,4,2.5,2.5], 'otu3': [6,3,3,4,3.5,3.5], 'otu4': [3,1.5,1.5,0,0,0], 'contam1': [1,0.5,0.5,4,3,3], 'contam2': [3,1.5,1.5,4,2.5,2.5], 'contam3': [3,2.5,2.5,4,2,2], 'contam4': [0,0,0,3,2,2]}
-exp_contamination_stats_dict_q50 = {'otu1': [4,3,3,1,0.5,0.5], 'otu2': [6,3.5,3.5,4,2.5,2.5], 'otu3': [6,3,3,4,3.5,3.5], 'otu4': [3,1.5,1.5,0,0,0], 'contam1': [1,0.5,0.5,4,3,3], 'contam2': [3,1.5,1.5,4,2.5,2.5], 'contam3': [3,2.5,2.5,4,2,2], 'contam4': [0,0,0,3,2,2]}
+exp_contam_header_q50 = ['maxS', 'avgS', 'q50S', 'maxB', 'avgB', 'q50B']
+exp_contam_stats_dict_q50 = {'otu1': [4,3,3,1,0.5,0.5], 'otu2': [6,3.5,3.5,4,2.5,2.5], 'otu3': [6,3,3,4,3.5,3.5], 'otu4': [3,1.5,1.5,0,0,0], 'contam1': [1,0.5,0.5,4,3,3], 'contam2': [3,1.5,1.5,4,2.5,2.5], 'contam3': [3,2.5,2.5,4,2,2], 'contam4': [0,0,0,3,2,2]}
 exp_contam_stats_dict_noblanks_q50 = {'otu1': [4,1.75,1.5], 'otu2': [6,3,2.5], 'otu3': [6,3.25,3.5], 'otu4': [3,0.75,0], 'contam1': [4,1.75,1.5], 'contam2': [4,2,2], 'contam3': [4,2.25,2.5], 'contam4': [3,1,0.5]}
 exp_contam_stats_dict_sample_q50 = {'otu1': [2,2,2,1,0.5,0.5], 'otu2': [1,1,1,4,2.5,2.5], 'otu3': [0,0,0,4,3.5,3.5], 'otu4': [0,0,0,0,0,0], 'contam1': [0,0,0,4,3,3], 'contam2': [0,0,0,4,2.5,2.5], 'contam3': [2,2,2,4,2,2], 'contam4': [0,0,0,3,2,2]}
 exp_contam_stats_dict_prop_q50 = {'otu1': [0.4000000000,0.2769230769,0.276923076923077,0.0416666667,0.0208333333,0.0208333333333333], 'otu2': [0.2307692308,0.2153846154,0.215384615384615,0.1666666667,0.1458333333,0.145833333333333], 'otu3': [0.2307692308,0.1153846154,0.115384615384615,0.3750000000,0.2708333333,0.270833333333333], 'otu4': [0.1153846154,0.0576923077,0.0576923076923077,0.0000000000,0.0000000000,0.0000000000], 'contam1': [0.0384615385,0.0192307692,0.0192307692307692,0.2500000000,0.2083333333,0.208333333333333], 'contam2': [0.1153846154,0.0576923077,0.0576923076923077,0.1666666667,0.1458333333,0.145833333333333], 'contam3': [0.4000000000,0.2576923077,0.257692307692308,0.1666666667,0.0833333333,0.0833333333333333], 'contam4': [0.0000000000,0.0000000000,0.0000000000,0.1250000000,0.1250000000,0.1250000000]}
 
-
-exp_contam_stats_dict_noblanks = {'otu1': [4.00,1.75], 'otu2': [6.00,3.00], 'otu3': [6.00,3.25], 'otu4': [3.00,0.75], 'contam1': [4.00,1.75], 'contam2': [4.00,2.00], 'contam3': [4.00,2.25], 'contam4': [3.00,1.00]}
-exp_contam_stats_dict_sample = {'otu1': [2.0,2.0, 1.0, 0.5],'otu2': [1.0,1.0, 4.0, 2.5],'otu3': [0.0,0.0, 4.0, 3.5],'otu4': [0.0,0.0, 0.0, 0.0],'contam1': [0.0,0.0, 4.0, 3.0],'contam2': [0.0,0.0, 4.0, 2.5],'contam3': [2.0,2.0, 4.0, 2.0],'contam4': [0.0,0.0, 3.0, 2.0]}
-exp_contamination_stats_dict_prop = {'otu1': [0.4,0.276923076923077,0.0416666666666667,0.0208333333333333], 'otu2': [0.230769230769231,0.215384615384615,0.166666666666667,0.145833333333333], 'otu3': [0.230769230769231,0.115384615384615,0.375,0.270833333333333], 'otu4': [0.115384615384615,0.0576923076923077,0,0], 'contam1': [0.0384615384615385,0.0192307692307692,0.25,0.208333333333333], 'contam2': [0.115384615384615,0.0576923076923077,0.166666666666667,0.145833333333333], 'contam3': [0.4,0.257692307692308,0.166666666666667,0.0833333333333333], 'contam4': [0,0,0.125,0.125]} 
-
-exp_contamination_header_q0 = ['maxS', 'avgS','maxB','avgB', 'q0S','q0B']
-exp_contamination_stats_dict_q0 = {'otu1': [0.4,0.276923076923077,0.0416666666666667,0.0208333333333333,0.153846153846154,0], 'otu2': [0.230769230769231,0.215384615384615,0.166666666666667,0.145833333333333,0.2,0.125], 'otu3': [0.230769230769231,0.115384615384615,0.375,0.270833333333333,0,0.166666666666667], 'otu4': [0.115384615384615,0.0576923076923077,0,0,0,0], 'contam1': [0.0384615384615385,0.0192307692307692,0.25,0.208333333333333,0,0.166666666666667], 'contam2': [0.115384615384615,0.0576923076923077,0.166666666666667,0.145833333333333,0,0.125], 'contam3': [0.4,0.257692307692308,0.166666666666667,0.0833333333333333,0.115384615384615,0], 'contam4': [0,0,0.125,0.125,0,0.125]}
-
-exp_contamination_header_q90 = ['maxS', 'avgS','maxB','avgB', 'q90S','q90B']
-exp_contamination_stats_dict_q90 = {'otu1': [0.4,0.276923076923077,0.0416666666666667,0.0208333333333333,0.4,0.0416666666666667], 'otu2': [0.230769230769231,0.215384615384615,0.166666666666667,0.145833333333333,0.230769230769231,0.166666666666667], 'otu3': [0.230769230769231,0.115384615384615,0.375,0.270833333333333,0.230769230769231,0.375], 'otu4': [0.115384615384615,0.0576923076923077,0,0,0.115384615384615,0], 'contam1': [0.0384615384615385,0.0192307692307692,0.25,0.208333333333333,0.0384615384615385,0.25], 'contam2': [0.115384615384615,0.0576923076923077,0.166666666666667,0.145833333333333,0.115384615384615,0.166666666666667], 'contam3': [0.4,0.257692307692308,0.166666666666667,0.0833333333333333,0.4,0.166666666666667], 'contam4': [0,0,0.125,0.125,0,0.125]}
+exp_contam_header_q75 = ['maxS', 'avgS', 'q75S', 'maxB', 'avgB', 'q75B']
+exp_contam_stats_dict_q75 = {'otu1': [4,3,3.5,1,0.5,0.75], 'otu2': [6,3.5,4.75,4,2.5,3.25], 'otu3': [6,3,4.5,4,3.5,3.75], 'otu4': [3,1.5,2.25,0,0,0], 'contam1': [1,0.5,0.75,4,3,3.5], 'contam2': [3,1.5,2.25,4,2.5,3.25], 'contam3': [3,2.5,2.75,4,2,3], 'contam4': [0,0,0,3,2,2.5]}
 
 test_sample_map = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tBlank\tAbund\tDescription\nBlank1\tAACCGCAT\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t1\t0\tBlank1\nBlank2\tAACCGCAC\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t1\t1\tBlank2\nSample1\tAACCGCAA\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t0\t2\tSample1\nSample2\tAACCGCAG\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t0\t3\tSample2\n"""
 

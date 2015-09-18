@@ -146,14 +146,12 @@ def biom_to_mothur_counts(biom_obj):
 
 
 def prescreen_libraries(unique_seq_biom,
-                        blank_sample_ids,
+                        contamination_stats_header,
+                        contamination_stats_dict,
                         removal_stat_sample, 
                         removal_stat_blank, 
                         removal_differential, 
                         prescreen_threshold):
-
-    contamination_stats_header, contamination_stats_dict = \
-            get_contamination_stats(unique_seq_biom, blank_sample_ids=blank_sample_ids)
 
     abund_contaminants = compare_blank_abundances(contamination_stats_dict, 
                                 contamination_stats_header,
@@ -173,7 +171,7 @@ def prescreen_libraries(unique_seq_biom,
     norm_biom.filter(lambda val, id_, metadata: sum(val) > prescreen_threshold,
                           axis='sample', invert=False, inplace=True)
 
-    # Now only have samples failing the prescreening
+    # Now only have samples passing the prescreening
     above_threshold_samples = norm_biom.ids(axis='sample')
 
     return above_threshold_samples

@@ -139,10 +139,17 @@ script_info['optional_options'] = [
                 help='discard sequences below this relative abundance threshold'),
     make_option('--prescreen_threshold', type="float",
                 help='prescreen libraries that lose more than this proportion of sequences'),
-    make_option('--removal_stat_blank', type="choice", choices=["maxB", "avgB"],
-                 help='blank statistic to be used for removal (maxB, avgB)'),
-    make_option('--removal_stat_sample', type="choice", choices=["maxS", "avgS"],
-                 help='sample statistic to be used for removal (maxS, avgS)'),
+    make_option('--removal_stat_blank', type="choice", choices=["maxB", "avgB", "quantile"],
+                 help='blank statistic to be used for removal (maxB, avgB, quantile)'),
+    make_option('--removal_stat_sample', type="choice", choices=["maxS", "avgS", "quantile"],
+                 help='sample statistic to be used for removal (maxS, avgS, quantile)'),
+    make_option('--qB', type="float", default=80, 
+                 help='Blank quantile to be used for removal [0-100, default = %default]'),
+    make_option('--qS', type="float", default=80, 
+                 help='Sample quantile to be used for removal [0-100, default = %default]'),
+    make_option('--interpolation', type="choice", default='nearest',
+                 choices=['linear', 'lower', 'higher', 'midpoint', 'nearest'],
+                 help='Interpolation to be used for quantiles [default=%default]'),
     make_option('--removal_differential', type="float",
                  help='differential proportion for removal (maxB > X * maxS)'),
     make_option('--reinstatement_stat_blank', type="choice", choices=["maxB", "avgB"],
@@ -191,6 +198,9 @@ def main():
     prescreen_threshold = opts.prescreen_threshold
     removal_stat_blank = opts.removal_stat_blank
     removal_stat_sample = opts.removal_stat_sample
+    qB = opts.qB
+    qS = opts.qS
+    interpolation = opts.interpolation
     removal_differential = opts.removal_differential
     reinstatement_stat_sample = opts.reinstatement_stat_sample
     reinstatement_stat_blank = opts.reinstatement_stat_blank
@@ -259,6 +269,12 @@ def main():
         removal_options_counter += 1
     if removal_differential:
         removal_options_counter += 1
+
+    if removal_stat_blank == 'quantile':
+        removal_stat_blank = 'q%SB' % qB
+    if removal_stat_sample == 'quantile':
+        removal_stat_sample = 'q%SS' % qS
+       
 
     if ((removal_options_counter > 0) and (removal_options_counter < 3)):
         option_parser.error("Must provide all of "
@@ -360,9 +376,17 @@ def main():
     # blank-dependent methods are requested:
 
     if blanks:
+        contamination_stats_header, contamination_stats_dict = \
+                get_contamination_stats(unique_seq_biom,
+                                        qS=qS, 
+                                        qB=qB, 
+                                        interpolation=interpolation,
+                                        blank_sample_ids=blank_sample_ids)
+
         if prescreen_threshold:
             low_contam_libraries = prescreen_libraries(unique_seq_biom,
-                                                       blank_sample_ids,
+                                                       contamination_stats_header,
+                                                       contamination_stats_dict,
                                                        removal_stat_sample, 
                                                        removal_stat_blank, 
                                                        removal_differential, 
@@ -370,18 +394,22 @@ def main():
 
             contamination_stats_header, contamination_stats_dict = \
                 get_contamination_stats(unique_seq_biom,
-                                        blank_sample_ids,
+                                        qS=qS, 
+                                        qB=qB, 
+                                        interpolation=interpolation,
+                                        blank_sample_ids=blank_sample_ids,
                                         exp_sample_ids=low_contam_libraries)
-        else:
-            contamination_stats_header, contamination_stats_dict = \
-                get_contamination_stats(unique_seq_biom, blank_sample_ids)
+
 
     elif (blank_stats_removal or reinstatement or prescreen_threshold):
         option_parser.error("Blank-based filtering requested but no blank"
                             "samples indicated in mapping file or ID file.")
     else:
         contamination_stats_header, contamination_stats_dict = \
-            get_contamination_stats(unique_seq_biom)
+            get_contamination_stats(unique_seq_biom,
+                                    qS=qS, 
+                                    qB=qB, 
+                                    interpolation=interpolation)
 
 
     seq_ids = unique_seq_biom.ids(axis='observation')
