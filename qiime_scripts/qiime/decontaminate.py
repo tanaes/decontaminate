@@ -14,6 +14,7 @@ from bfillings.uclust import get_clusters_from_fasta_filepath
 from bfillings.usearch import usearch_qf
 from scipy.stats import spearmanr
 import os.path
+import numpy as np
 
 def pick_ref_contaminants(queries, ref_db_fp, input_fasta_fp, contaminant_similarity, output_dir):
     # Blast against contaminant DB
@@ -152,7 +153,7 @@ def prescreen_libraries(unique_seq_biom,
                         prescreen_threshold):
 
     contamination_stats_header, contamination_stats_dict = \
-            get_contamination_stats(unique_seq_biom, blank_sample_ids)
+            get_contamination_stats(unique_seq_biom, blank_sample_ids=blank_sample_ids)
 
     abund_contaminants = compare_blank_abundances(contamination_stats_dict, 
                                 contamination_stats_header,
@@ -178,11 +179,11 @@ def prescreen_libraries(unique_seq_biom,
     return above_threshold_samples
 
 
-def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=[], proportional=False):
+def get_contamination_stats(biom_file, qS=50, qB=50, interpolation='midpoint', blank_sample_ids=None, exp_sample_ids=[], proportional=False):
     if not proportional:
         biom_file = biom_file.norm(inplace=False)
 
-    header = ['maxS','avgS']
+    header = ['maxS','avgS','q%sS' % qS]
 
     # Calculate blank stats if blank sample names are provided
     if blank_sample_ids:
@@ -192,11 +193,14 @@ def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=[],
 
         blank_data = biom_file.filter(blank_sample_ids, axis='sample', 
                                       invert=False, inplace=False).matrix_data
-        maxB = blank_data.max(axis=1).todense().tolist()
-        avgB = blank_data.mean(axis=1).tolist()
+        maxB = [x[0] for x in blank_data.max(axis=1).todense().tolist()]
+        avgB = [x[0] for x in blank_data.mean(axis=1).tolist()]
+        quantB = np.percentile(blank_data.todense(),qB,axis=1, interpolation=interpolation).tolist()
 
         header.append('maxB')
         header.append('avgB')
+        header.append('q%sB' % qB)
+
     else:
         # Otherwise, set the 'blanks' to an empty list
         blank_sample_ids = []
@@ -211,22 +215,24 @@ def get_contamination_stats(biom_file, blank_sample_ids=None, exp_sample_ids=[],
     sample_data = biom_file.filter(exp_sample_ids, axis='sample', 
         invert=False, inplace=False).matrix_data
 
-    maxS = sample_data.max(axis=1).todense().tolist()
-    avgS = sample_data.mean(axis=1).tolist()
-
+    maxS = [x[0] for x in sample_data.max(axis=1).todense().tolist()]
+    avgS = [x[0] for x in sample_data.mean(axis=1).tolist()]
+    quantS = np.percentile(sample_data.todense(),qS,axis=1, interpolation=interpolation).tolist()
+    
     stats_dict = {}
 
     i = 0
     if blanks:
         for otu in biom_file.ids(axis='observation'):
-            stats_dict[otu] = [maxS[i][0], avgS[i][0], maxB[i][0], avgB[i][0]]
+            stats_dict[otu] = [maxS[i], avgS[i], quantS[i], maxB[i], avgB[i], quantB[i]]
             i += 1
     else:
         for otu in biom_file.ids(axis='observation'):
-            stats_dict[otu] = [maxS[i][0], avgS[i][0]]
+            stats_dict[otu] = [maxS[i], avgS[i], quantS[i]]
             i += 1
 
     return(header, stats_dict)
+
 
 def pick_min_relabund_threshold(stats_dict, stats_header, min_relabund, sample_stat='maxS'):
 

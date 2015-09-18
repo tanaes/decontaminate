@@ -14,6 +14,7 @@ from tempfile import mkstemp, mkdtemp
 import os
 
 import numpy
+import copy
 from numpy import array
 from numpy.testing import assert_almost_equal, assert_allclose
 from StringIO import StringIO
@@ -327,53 +328,77 @@ class DecontaminationTests(TestCase):
 
         # test when passing already-proportional table
 
-        (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, blank_sample_ids, proportional=True)
+        (obs_contamination_header, obs_contamination_stats_dict) = \
+                  get_contamination_stats(test_biom,
+                                          qS=50, 
+                                          qB=50, 
+                                          interpolation='midpoint',
+                                          blank_sample_ids=blank_sample_ids,
+                                          proportional=True)
 
         # Header is as expected
-        self.assertItemsEqual(exp_contamination_header,
+        self.assertItemsEqual(exp_contamination_header_q50,
                               obs_contamination_header)
 
         # Contamination stats dict is as expected
-        self.assertDictEqual(exp_contamination_stats_dict,
+        self.assertDictEqual(exp_contamination_stats_dict_q50,
                               obs_contamination_stats_dict)
         
 
         # test when passing non-proportional table
 
-        (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, blank_sample_ids, proportional=False)
+        (obs_contamination_header, obs_contamination_stats_dict) = \
+                  get_contamination_stats(test_biom,
+                                          qS=50, 
+                                          qB=50, 
+                                          interpolation='midpoint',
+                                          blank_sample_ids=blank_sample_ids,
+                                          proportional=False)
 
         # Header is as expected
-        self.assertItemsEqual(exp_contamination_header,
+        self.assertItemsEqual(exp_contamination_header_q50,
                               obs_contamination_header)
 
         # Contamination stats dict is as expected
-        assertDeepAlmostEqual(self,exp_contamination_stats_dict_prop,
+        assertDeepAlmostEqual(self,exp_contam_stats_dict_prop_q50,
                               obs_contamination_stats_dict)
 
 
         # test when passing no blank information
 
-        (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, proportional=True)
+        (obs_contamination_header, obs_contamination_stats_dict) = \
+                    get_contamination_stats(test_biom,
+                                        qS=50, 
+                                        qB=50, 
+                                        interpolation='midpoint',
+                                        proportional=True)
 
         # Header is as expected
-        self.assertItemsEqual(['maxS','avgS'],
+        self.assertItemsEqual(['maxS','avgS','q50S'],
                               obs_contamination_header)
 
         # Contamination stats dict is as expected
-        assertDeepAlmostEqual(self, exp_contam_stats_dict_noblanks,
+        assertDeepAlmostEqual(self, exp_contam_stats_dict_noblanks_q50,
                               obs_contamination_stats_dict)
 
 
         # test when passing specified samples information
 
-        (obs_contamination_header, obs_contamination_stats_dict) = get_contamination_stats(test_biom, blank_sample_ids, exp_sample_ids=['Sample2'], proportional=True)
+        (obs_contamination_header, obs_contamination_stats_dict) = \
+                    get_contamination_stats(test_biom,
+                                          qS=50, 
+                                          qB=50, 
+                                          interpolation='midpoint',
+                                          blank_sample_ids=blank_sample_ids,
+                                          exp_sample_ids=['Sample2'],
+                                          proportional=True)
 
         # Header is as expected
-        self.assertItemsEqual(exp_contamination_header,
+        self.assertItemsEqual(exp_contamination_header_q50,
                               obs_contamination_header)
 
         # Contamination stats dict is as expected
-        assertDeepAlmostEqual(self, exp_contam_stats_dict_sample,
+        assertDeepAlmostEqual(self, exp_contam_stats_dict_sample_q50 ,
                               obs_contamination_stats_dict)
 
 
@@ -453,11 +478,28 @@ test_biom_file_filt = """{"id": "None","format": "Biological Observation Matrix 
 
 
 test_mothur_counts_table = "Representative_Sequence\ttotal\tBlank1\tBlank2\tSample1\tSample2\notu1\t7\t1\t0\t4\t2\notu2\t12\t4\t1\t6\t1\notu3\t13\t4\t3\t6\t0\notu4\t3\t0\t0\t3\t0\ncontam1\t7\t4\t2\t1\t0\ncontam2\t8\t4\t1\t3\t0\ncontam3\t9\t4\t0\t3\t2\ncontam4\t4\t3\t1\t0\t0\n"
-exp_contamination_header = ['maxS', 'avgS','maxB','avgB']
+exp_contamination_header = ['maxS', 'avgS', 'maxB','avgB']
 exp_contamination_stats_dict = {'otu1': [4,3,1,0.5], 'otu2': [6,3.5,4,2.5], 'otu3': [6,3,4,3.5], 'otu4': [3,1.5,0,0], 'contam1': [1,0.5,4,3], 'contam2': [3,1.5,4,2.5], 'contam3': [3,2.5,4,2], 'contam4': [0,0,3,2]}
+
+
+exp_contamination_header_q50 = ['maxS', 'avgS', 'q50S', 'maxB', 'avgB', 'q50B']
+
+exp_contamination_stats_dict_q50 = {'otu1': [4,3,3,1,0.5,0.5], 'otu2': [6,3.5,3.5,4,2.5,2.5], 'otu3': [6,3,3,4,3.5,3.5], 'otu4': [3,1.5,1.5,0,0,0], 'contam1': [1,0.5,0.5,4,3,3], 'contam2': [3,1.5,1.5,4,2.5,2.5], 'contam3': [3,2.5,2.5,4,2,2], 'contam4': [0,0,0,3,2,2]}
+exp_contamination_stats_dict_q50 = {'otu1': [4,3,3,1,0.5,0.5], 'otu2': [6,3.5,3.5,4,2.5,2.5], 'otu3': [6,3,3,4,3.5,3.5], 'otu4': [3,1.5,1.5,0,0,0], 'contam1': [1,0.5,0.5,4,3,3], 'contam2': [3,1.5,1.5,4,2.5,2.5], 'contam3': [3,2.5,2.5,4,2,2], 'contam4': [0,0,0,3,2,2]}
+exp_contam_stats_dict_noblanks_q50 = {'otu1': [4,1.75,1.5], 'otu2': [6,3,2.5], 'otu3': [6,3.25,3.5], 'otu4': [3,0.75,0], 'contam1': [4,1.75,1.5], 'contam2': [4,2,2], 'contam3': [4,2.25,2.5], 'contam4': [3,1,0.5]}
+exp_contam_stats_dict_sample_q50 = {'otu1': [2,2,2,1,0.5,0.5], 'otu2': [1,1,1,4,2.5,2.5], 'otu3': [0,0,0,4,3.5,3.5], 'otu4': [0,0,0,0,0,0], 'contam1': [0,0,0,4,3,3], 'contam2': [0,0,0,4,2.5,2.5], 'contam3': [2,2,2,4,2,2], 'contam4': [0,0,0,3,2,2]}
+exp_contam_stats_dict_prop_q50 = {'otu1': [0.4000000000,0.2769230769,0.276923076923077,0.0416666667,0.0208333333,0.0208333333333333], 'otu2': [0.2307692308,0.2153846154,0.215384615384615,0.1666666667,0.1458333333,0.145833333333333], 'otu3': [0.2307692308,0.1153846154,0.115384615384615,0.3750000000,0.2708333333,0.270833333333333], 'otu4': [0.1153846154,0.0576923077,0.0576923076923077,0.0000000000,0.0000000000,0.0000000000], 'contam1': [0.0384615385,0.0192307692,0.0192307692307692,0.2500000000,0.2083333333,0.208333333333333], 'contam2': [0.1153846154,0.0576923077,0.0576923076923077,0.1666666667,0.1458333333,0.145833333333333], 'contam3': [0.4000000000,0.2576923077,0.257692307692308,0.1666666667,0.0833333333,0.0833333333333333], 'contam4': [0.0000000000,0.0000000000,0.0000000000,0.1250000000,0.1250000000,0.1250000000]}
+
+
 exp_contam_stats_dict_noblanks = {'otu1': [4.00,1.75], 'otu2': [6.00,3.00], 'otu3': [6.00,3.25], 'otu4': [3.00,0.75], 'contam1': [4.00,1.75], 'contam2': [4.00,2.00], 'contam3': [4.00,2.25], 'contam4': [3.00,1.00]}
 exp_contam_stats_dict_sample = {'otu1': [2.0,2.0, 1.0, 0.5],'otu2': [1.0,1.0, 4.0, 2.5],'otu3': [0.0,0.0, 4.0, 3.5],'otu4': [0.0,0.0, 0.0, 0.0],'contam1': [0.0,0.0, 4.0, 3.0],'contam2': [0.0,0.0, 4.0, 2.5],'contam3': [2.0,2.0, 4.0, 2.0],'contam4': [0.0,0.0, 3.0, 2.0]}
 exp_contamination_stats_dict_prop = {'otu1': [0.4,0.276923076923077,0.0416666666666667,0.0208333333333333], 'otu2': [0.230769230769231,0.215384615384615,0.166666666666667,0.145833333333333], 'otu3': [0.230769230769231,0.115384615384615,0.375,0.270833333333333], 'otu4': [0.115384615384615,0.0576923076923077,0,0], 'contam1': [0.0384615384615385,0.0192307692307692,0.25,0.208333333333333], 'contam2': [0.115384615384615,0.0576923076923077,0.166666666666667,0.145833333333333], 'contam3': [0.4,0.257692307692308,0.166666666666667,0.0833333333333333], 'contam4': [0,0,0.125,0.125]} 
+
+exp_contamination_header_q0 = ['maxS', 'avgS','maxB','avgB', 'q0S','q0B']
+exp_contamination_stats_dict_q0 = {'otu1': [0.4,0.276923076923077,0.0416666666666667,0.0208333333333333,0.153846153846154,0], 'otu2': [0.230769230769231,0.215384615384615,0.166666666666667,0.145833333333333,0.2,0.125], 'otu3': [0.230769230769231,0.115384615384615,0.375,0.270833333333333,0,0.166666666666667], 'otu4': [0.115384615384615,0.0576923076923077,0,0,0,0], 'contam1': [0.0384615384615385,0.0192307692307692,0.25,0.208333333333333,0,0.166666666666667], 'contam2': [0.115384615384615,0.0576923076923077,0.166666666666667,0.145833333333333,0,0.125], 'contam3': [0.4,0.257692307692308,0.166666666666667,0.0833333333333333,0.115384615384615,0], 'contam4': [0,0,0.125,0.125,0,0.125]}
+
+exp_contamination_header_q90 = ['maxS', 'avgS','maxB','avgB', 'q90S','q90B']
+exp_contamination_stats_dict_q90 = {'otu1': [0.4,0.276923076923077,0.0416666666666667,0.0208333333333333,0.4,0.0416666666666667], 'otu2': [0.230769230769231,0.215384615384615,0.166666666666667,0.145833333333333,0.230769230769231,0.166666666666667], 'otu3': [0.230769230769231,0.115384615384615,0.375,0.270833333333333,0.230769230769231,0.375], 'otu4': [0.115384615384615,0.0576923076923077,0,0,0.115384615384615,0], 'contam1': [0.0384615384615385,0.0192307692307692,0.25,0.208333333333333,0.0384615384615385,0.25], 'contam2': [0.115384615384615,0.0576923076923077,0.166666666666667,0.145833333333333,0.115384615384615,0.166666666666667], 'contam3': [0.4,0.257692307692308,0.166666666666667,0.0833333333333333,0.4,0.166666666666667], 'contam4': [0,0,0.125,0.125,0,0.125]}
 
 test_sample_map = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tBlank\tAbund\tDescription\nBlank1\tAACCGCAT\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t1\t0\tBlank1\nBlank2\tAACCGCAC\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t1\t1\tBlank2\nSample1\tAACCGCAA\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t0\t2\tSample1\nSample2\tAACCGCAG\tCATGCTGCCTCCCGTAGGAGTGAGTTTGATCNTGGCTCAG\t0\t3\tSample2\n"""
 
