@@ -271,9 +271,9 @@ def main():
         removal_options_counter += 1
 
     if removal_stat_blank == 'quantile':
-        removal_stat_blank = 'q%SB' % qB
+        removal_stat_blank = 'q%sB' % qB
     if removal_stat_sample == 'quantile':
-        removal_stat_sample = 'q%SS' % qS
+        removal_stat_sample = 'q%sS' % qS
        
 
     if ((removal_options_counter > 0) and (removal_options_counter < 3)):
