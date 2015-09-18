@@ -257,7 +257,7 @@ def compare_blank_abundances(stats_dict, stats_header,
     passed_otus = set()
 
     for otu in stats_dict:
-        if((float(stats_dict[otu][i_s]) > (float(scalar) * float(stats_dict[otu][i_b]))) != negate):
+        if((float(stats_dict[otu][i_s]) >= (float(scalar) * float(stats_dict[otu][i_b]))) != negate):
             passed_otus.add(otu)
 
     # print passed_otus
